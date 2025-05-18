@@ -38,3 +38,6 @@ out/
 
 # Ignorar arquivo de configuração sensível
 application.properties
+
+# Ignorar arquivo chave
+firebase-service-account.json
