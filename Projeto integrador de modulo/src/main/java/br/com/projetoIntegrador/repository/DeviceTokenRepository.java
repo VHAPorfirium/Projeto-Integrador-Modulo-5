@@ -5,6 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
+// Essa interface tem a funcionalidade de fornecer operações de CRUD para tokens de dispositivo.
 public interface DeviceTokenRepository extends JpaRepository<DeviceToken, Long> {
-    List<DeviceToken> findAllByUserId(String userId);
+
+    // Retorna todos os tokens de dispositivo associados a um paciente pelo seu ID.
+    List<DeviceToken> findAllByPacienteId(Long pacienteId);
+
 }

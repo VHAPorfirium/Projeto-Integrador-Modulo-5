@@ -1,16 +1,29 @@
 package br.com.projetoIntegrador.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
+// Essa classe tem a funcionalidade de representar a requisição de registro de token de dispositivo de um paciente.
 public class TokenRequest {
-    @NotBlank
-    private String userId;
-    @NotBlank
+
+    @NotNull
+    private Long pacienteId;
+
+    @NotNull
     private String token;
 
-    // getters e setters
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
+    public Long getPacienteId() {
+        return pacienteId;
+    }
+
+    public void setPacienteId(Long pacienteId) {
+        this.pacienteId = pacienteId;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 }

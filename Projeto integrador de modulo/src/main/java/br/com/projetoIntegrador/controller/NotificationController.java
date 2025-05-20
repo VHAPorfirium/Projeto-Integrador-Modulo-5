@@ -6,8 +6,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+// Essa classe tem a funcionalidade de expor endpoint para envio de notificações via Firebase.
 @RestController
-@RequestMapping("/notifications")
+@RequestMapping("/notificações")
 public class NotificationController {
 
     private final NotificationService service;
@@ -16,9 +17,11 @@ public class NotificationController {
         this.service = service;
     }
 
+    // Recebe a requisição de notificação, dispara o envio e retorna a quantidade enviada.
     @PostMapping
-    public ResponseEntity<String> send(@RequestBody @Valid NotificationRequest req) throws Exception {
-        int successCount = service.send(req);
-        return ResponseEntity.ok("Notificações enviadas com sucesso: " + successCount);
+    public ResponseEntity<String> send(
+            @RequestBody @Valid NotificationRequest req) throws Exception {
+        int count = service.send(req);
+        return ResponseEntity.ok("Notificações enviadas: " + count);
     }
 }

@@ -41,3 +41,6 @@ application.properties
 
 # Ignorar arquivo chave
 firebase-service-account.json
+
+#
+Script banco de dados.txt
