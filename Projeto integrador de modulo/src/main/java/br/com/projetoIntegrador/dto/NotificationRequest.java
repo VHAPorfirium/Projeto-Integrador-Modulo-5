@@ -1,13 +1,14 @@
 package br.com.projetoIntegrador.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import java.util.Map;
+
+import jakarta.validation.constraints.NotBlank;
 
 // Essa classe tem a funcionalidade de representar a requisição de notificação com destinatário, título, corpo e dados adicionais.
 public class NotificationRequest {
 
     @NotBlank
-    private String userId;
+    private String pacienteId;
 
     @NotBlank
     private String title;
@@ -17,12 +18,12 @@ public class NotificationRequest {
 
     private Map<String, String> data;
 
-    public String getUserId() {
-        return userId;
+    public String getPacienteId() {
+        return pacienteId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setPacienteId(String pacienteId) {
+        this.pacienteId = pacienteId;
     }
 
     public String getTitle() {
