@@ -9,24 +9,34 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
+import java.util.Optional;
 
 // Essa classe tem a funcionalidade de configurar o Firebase e expor beans para envio de notificações.
 @Configuration
 public class FirebaseConfig {
 
-    // Cria e inicializa o FirebaseApp com as credenciais do serviço.
     @Bean
-    public FirebaseApp firebaseApp() throws IOException {
-        var serviceAccount = new ClassPathResource("firebase-service-account.json");
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount.getInputStream()))
-                .build();
-        return FirebaseApp.initializeApp(options);
-    }
+    public FirebaseMessaging firebaseMessaging() throws IOException {
+        ClassPathResource serviceAccountResource = new ClassPathResource("firebase-service-account.json");
 
-    // Fornece o bean de FirebaseMessaging vinculado ao FirebaseApp inicializado.
-    @Bean
-    public FirebaseMessaging firebaseMessaging(FirebaseApp app) {
-        return FirebaseMessaging.getInstance(app);
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccountResource.getInputStream()))
+                // .setDatabaseUrl("https://<>.firebaseio.com/") ID do projeto Firebase
+                .build();
+
+        final String appName = "my-app-projeto-integrador"; 
+        FirebaseApp firebaseApp;
+
+        Optional<FirebaseApp> existingApp = FirebaseApp.getApps().stream()
+                .filter(app -> app.getName().equals(appName))
+                .findFirst();
+
+        if (existingApp.isPresent()) {
+            firebaseApp = existingApp.get();
+        } else {
+            firebaseApp = FirebaseApp.initializeApp(options, appName);
+        }
+
+        return FirebaseMessaging.getInstance(firebaseApp);
     }
 }
