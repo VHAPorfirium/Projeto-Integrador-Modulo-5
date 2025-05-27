@@ -1,0 +1,64 @@
+--> Pacientes
+
+1 - Criar novo paciente:
+	Tudo ok
+
+2 - Listar todos pacientes:
+	Tudo ok
+
+3 - Buscar paciente por ID:
+	Tudo ok
+
+4 - Atualizar paciente:
+	- Atenção na hora de atualizar o paciente, todos os dados devem estar preenchido e não apenas o que quer atualizar.
+	Funcionando ok
+
+5 - Deletar paciente:
+	Tudo ok
+
+--> Entradas de atendimento:
+
+1 - Criar checkin
+	Tudo ok
+
+2 - Listar todas as entradas de atendimento:
+	tudo ok  
+
+3 - Detalhe de entrada de atendimento	
+	tudo ok
+
+4 - Atualizar status
+	tudo ok
+
+--> Retornos
+
+1 - Criar novo Retornos	
+	tudo ok
+
+2 - Listar todos Retornos
+	tudo ok
+
+3 - Listar por ID
+	tudo ok
+
+4 - Atualizar paciente
+	tudo ok
+
+5 - Deletar por ID
+	tudo ok
+
+--> Device tokens
+
+1 - Cria token:
+	tudo ok
+
+2 - Listarar tokens por ID
+	tudo ok
+
+3 - Deletar por ID
+	tudo ok
+
+--> Notificações
+
+1 - teste de envio de notificação
+	tudo ok

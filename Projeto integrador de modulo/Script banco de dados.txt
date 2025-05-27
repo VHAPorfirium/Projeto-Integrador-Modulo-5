@@ -1,0 +1,216 @@
+-- ==============================================
+-- 1) Limpando tudo (tabelas e enums)
+-- ==============================================
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS follow_ups CASCADE;
+DROP TABLE IF EXISTS attendance_entries CASCADE;
+DROP TABLE IF EXISTS device_tokens CASCADE;
+DROP TABLE IF EXISTS employee_specialties CASCADE;
+DROP TABLE IF EXISTS employees CASCADE;
+DROP TABLE IF EXISTS specialties CASCADE;
+DROP TABLE IF EXISTS patients CASCADE;
+
+DROP TYPE IF EXISTS employee_role CASCADE;
+DROP TYPE IF EXISTS followup_status CASCADE;
+DROP TYPE IF EXISTS attendance_status CASCADE;
+
+
+-- ==============================================
+-- 2) Criando os tipos ENUM (Português)
+-- ==============================================
+CREATE TYPE attendance_status AS ENUM (
+    'AGUARDANDO',      -- Aguardando chamada
+    'CHAMADO',         -- Chamado, aguardando confirmação
+    'CONFIRMADO',      -- Paciente confirmou presença
+    'NAO_COMPARECEU',  -- Não compareceu
+    'ATENDIDO'         -- Atendimento realizado
+);
+
+CREATE TYPE followup_status AS ENUM (
+    'AGENDADO',   -- Agendado
+    'REALIZADO',  -- Realizado
+    'CANCELADO'   -- Cancelado
+);
+
+CREATE TYPE employee_role AS ENUM (
+    'RECEPCIONISTA',       -- Registra e emite senhas
+    'PROFISSIONAL_SAUDE',  -- Médico, enfermeiro, técnico, etc.
+    'DIRETOR',             -- Diretor da clínica
+    'ADMINISTRADOR'        -- Administrador do sistema
+);
+
+
+-- ==============================================
+-- 3) Criando tabelas
+-- ==============================================
+CREATE TABLE patients (
+    id             BIGSERIAL      PRIMARY KEY,
+    full_name      VARCHAR(255)   NOT NULL,
+    birth_date     DATE           NOT NULL,
+    cpf            VARCHAR(14)    NOT NULL UNIQUE,
+    rg             VARCHAR(20),
+    email          VARCHAR(255),
+    phone          VARCHAR(20),
+    address_street VARCHAR(255),
+    address_city   VARCHAR(100),
+    address_state  VARCHAR(50),
+    address_zip    VARCHAR(20),
+    allergies      TEXT[]         NOT NULL DEFAULT '{}'::TEXT[],
+    medications    TEXT[]         NOT NULL DEFAULT '{}'::TEXT[],
+    profile_photo  BYTEA,
+    is_active      BOOLEAN        NOT NULL DEFAULT TRUE,
+    created_at     TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_email_format
+      CHECK (email IS NULL OR email ~* '^[^@]+@[^@]+\.[a-z]{2,}$')
+);
+
+CREATE TABLE specialties (
+    id          BIGSERIAL      PRIMARY KEY,
+    name        VARCHAR(100)   NOT NULL UNIQUE,
+    description TEXT
+);
+
+CREATE TABLE employees (
+    id             BIGSERIAL     PRIMARY KEY,
+    matricula      VARCHAR(50)   NOT NULL UNIQUE,
+    full_name      VARCHAR(255)  NOT NULL,
+    password_hash  VARCHAR(255)  NOT NULL,
+    role           employee_role NOT NULL DEFAULT 'RECEPCIONISTA',
+    is_active      BOOLEAN       NOT NULL DEFAULT TRUE,
+    created_at     TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE employee_specialties (
+    employee_id  BIGINT NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+    specialty_id BIGINT NOT NULL REFERENCES specialties(id) ON DELETE CASCADE,
+    PRIMARY KEY(employee_id, specialty_id)
+);
+
+CREATE TABLE device_tokens (
+    id          BIGSERIAL      PRIMARY KEY,
+    patient_id  BIGINT         NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    token       VARCHAR(512)   NOT NULL,
+    created_at  TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_device_token UNIQUE(patient_id, token)
+);
+
+CREATE TABLE attendance_entries (
+    id                    BIGSERIAL         PRIMARY KEY,
+    patient_id            BIGINT            NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    specialty_id          BIGINT            NOT NULL REFERENCES specialties(id),
+    check_in_time         TIMESTAMPTZ       NOT NULL DEFAULT NOW(),
+    status                attendance_status NOT NULL DEFAULT 'AGUARDANDO',
+    call_time             TIMESTAMPTZ,
+    confirmation_deadline TIMESTAMPTZ,
+    confirmation_time     TIMESTAMPTZ,
+    attempts              SMALLINT          NOT NULL DEFAULT 0,
+    start_service_time    TIMESTAMPTZ,
+    end_service_time      TIMESTAMPTZ,
+    created_at            TIMESTAMPTZ       NOT NULL DEFAULT NOW(),
+    updated_at            TIMESTAMPTZ       NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE follow_ups (
+    id             BIGSERIAL       PRIMARY KEY,
+    patient_id     BIGINT          NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    scheduled_time TIMESTAMPTZ     NOT NULL,
+    status         followup_status NOT NULL DEFAULT 'AGENDADO',
+    created_at     TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    canceled_at    TIMESTAMPTZ
+);
+
+CREATE TABLE notifications (
+    id         BIGSERIAL      PRIMARY KEY,
+    patient_id BIGINT         NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    title      VARCHAR(255)   NOT NULL,
+    body       TEXT           NOT NULL,
+    data       JSONB,
+    sent_at    TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+);
+
+
+-- ==============================================
+-- 4) Índices adicionais
+-- ==============================================
+CREATE INDEX idx_attendance_patient ON attendance_entries(patient_id);
+CREATE INDEX idx_followup_patient ON follow_ups(patient_id);
+
+
+-- ==============================================
+-- 5) Trigger para manter updated_at
+-- ==============================================
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$
+DECLARE
+  tbl TEXT;
+  tables TEXT[] := ARRAY[
+    'patients','employees','specialties','employee_specialties',
+    'device_tokens','attendance_entries','follow_ups','notifications'
+  ];
+BEGIN
+  FOREACH tbl IN ARRAY tables LOOP
+    EXECUTE FORMAT('DROP TRIGGER IF EXISTS %I_updated_at ON %I', tbl, tbl);
+    EXECUTE FORMAT(
+      'CREATE TRIGGER %I_updated_at BEFORE UPDATE ON %I FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()',
+      tbl, tbl
+    );
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- ==============================================
+-- 6) Dados de exemplo
+-- ==============================================
+-- Especialidades
+INSERT INTO specialties (id, name, description) VALUES
+  (1, 'Cardiologia',  'Tratamento de doenças cardíacas'),
+  (2, 'Dermatologia','Tratamento de doenças de pele'),
+  (3, 'Neurologia',   'Tratamento de doenças do sistema nervoso');
+
+-- Pacientes
+INSERT INTO patients (
+  id, full_name, birth_date, cpf, rg, email, phone,
+  address_street, address_city, address_state, address_zip,
+  allergies, medications, is_active
+) VALUES
+  (1, 'João Silva',    '1985-10-12','12345678900','MG-12.345.678','joao@example.com','(11)99999-0001',
+   'Rua A, 123','São Paulo','SP','01234-567',
+   ARRAY['Pólen'],    ARRAY['Aspirina'], TRUE),
+  (2, 'Maria Souza',   '1990-05-20','98765432100','SP-87.654.321','maria@example.com','(21)98888-0002',
+   'Av. B, 456','Rio de Janeiro','RJ','12345-678',
+   ARRAY['Amendoim'], ARRAY['Ibuprofeno'], TRUE),
+  (3, 'Carlos Pereira','1978-03-15','11223344556','RJ-11.223.344','carlos@example.com','(31)97777-0003',
+   'Trav. C, 789','Belo Horizonte','MG','23456-789',
+   ARRAY['Marisco'],  ARRAY['Omeprazol'],   TRUE);
+
+-- Device Tokens
+INSERT INTO device_tokens (id, patient_id, token) VALUES
+  (1,1,'token_joao_abc123'),
+  (2,2,'token_maria_def456');
+
+-- Entradas de Atendimento
+INSERT INTO attendance_entries (id, patient_id, specialty_id, status, attempts) VALUES
+  (1,1,1,'AGUARDANDO',0),
+  (2,2,2,'CHAMADO',1),
+  (3,3,3,'CONFIRMADO',1);
+
+-- Retornos
+INSERT INTO follow_ups (id, patient_id, scheduled_time, status) VALUES
+  (1,1,'2025-06-01T09:00:00Z','AGENDADO'),
+  (2,2,'2025-06-02T10:30:00Z','AGENDADO');
+
+-- Notificações
+INSERT INTO notifications (id, patient_id, title, body, data) VALUES
+  (1,1,'Bem-vindo!','Olá João, seu cadastro foi concluído com sucesso.','{"action":"welcome"}'),
+  (2,2,'Lembrete','Maria, sua consulta está agendada para 02/06 às 10:30.','{"type":"followup_reminder"}');
