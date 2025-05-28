@@ -5,6 +5,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Objects;
 
 // Essa classe tem a funcionalidade de representar a entidade de um paciente no banco de dados.
 @Entity
@@ -27,6 +29,10 @@ public class Paciente {
     // CPF do paciente, deve ser único.
     @Column(nullable = false, unique = true)
     private String cpf;
+
+    // Senha
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash; // Campo para a senha
 
     // RG do paciente.
     private String rg;
@@ -213,5 +219,35 @@ public class Paciente {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    // equals, hashCode, toString 
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Paciente paciente = (Paciente) o;
+        return Objects.equals(id, paciente.id) && Objects.equals(cpf, paciente.cpf);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, cpf);
+    }
+
+    @Override
+    public String toString() {
+        return "Paciente{" +
+               "id=" + id +
+               ", fullName='" + fullName + '\'' +
+               ", cpf='" + cpf + '\'' +
+               '}';
     }
 }

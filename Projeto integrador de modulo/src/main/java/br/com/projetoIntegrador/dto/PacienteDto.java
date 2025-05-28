@@ -2,6 +2,7 @@ package br.com.projetoIntegrador.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -19,6 +20,10 @@ public class PacienteDto {
     @NotBlank
     private String cpf;
 
+    @NotBlank(message = "A senha é obrigatória no cadastro.")
+    @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres.")
+    private String password; 
+
     private String rg;
     private String email;
     private String phone;
@@ -34,6 +39,8 @@ public class PacienteDto {
     private Boolean isActive;
     private Instant createdAt;
     private Instant updatedAt;
+
+    public PacienteDto() {}
 
     public Long getId() {
         return id;
@@ -65,6 +72,14 @@ public class PacienteDto {
 
     public void setCpf(String cpf) {
         this.cpf = cpf;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getRg() {

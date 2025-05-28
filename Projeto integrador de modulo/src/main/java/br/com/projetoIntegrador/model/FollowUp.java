@@ -16,7 +16,7 @@ public class FollowUp {
     private Long id;
 
     // Paciente associado ao follow-up.
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
     private Paciente paciente;
 
