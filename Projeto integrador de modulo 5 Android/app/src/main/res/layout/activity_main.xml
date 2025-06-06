@@ -1,19 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:orientation="vertical"
+    android:background="@color/light_blue_bg"
+    android:gravity="center"
+    android:padding="24dp"
+    tools:context=".presentation.ui.activity.MainActivity"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <TextView
+        android:id="@+id/textWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="Bem Vindo(a)!"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary_blue"
+        android:shadowColor="@color/black"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="1.5"
+        android:layout_marginBottom="40dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <Button
+        android:id="@+id/btnPaciente"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="Sou Paciente"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:backgroundTint="@color/primary_blue"
+        android:layout_marginBottom="20dp" />
+
+    <Button
+        android:id="@+id/btnFuncionario"
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="Sou Funcionário"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:backgroundTint="@color/secondary_teal" />
+
+</LinearLayout>

@@ -1,14 +1,8 @@
 pluginManagement {
     repositories {
-        gradlePluginPortal()
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
@@ -17,8 +11,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // Repositório para a biblioteca de gráficos MPAndroidChart
+        maven { url 'https://jitpack.io' }
     }
 }
 
-rootProject.name = "Projeto integrador de modulo 5 Android"
-include(":app")
+rootProject.name = "Projeto Integrador Clinica"
+include ':app'

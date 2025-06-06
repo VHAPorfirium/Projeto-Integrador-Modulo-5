@@ -38,7 +38,8 @@ public class AttendanceEntryService {
                 .collect(Collectors.toList());
     }
 
-    // Retorna um registro de atendimento pelo ID, lançando exceção se não encontrado.
+    // Retorna um registro de atendimento pelo ID, lançando exceção se não
+    // encontrado.
     public AttendanceEntryDto findById(Long id) {
         return repo.findById(id)
                 .map(this::toDto)
@@ -56,6 +57,35 @@ public class AttendanceEntryService {
         entry.setSpecialty(s);
         entry.setStatus(AttendanceStatus.valueOf(dto.getStatus()));
         entry = repo.save(entry);
+        return toDto(entry);
+    }
+
+    public AttendanceEntryDto confirmarPresenca(Long id) {
+        AttendanceEntry entry = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Entrada de atendimento não encontrada com ID: " + id));
+
+        // Lógica: Só pode confirmar se foi chamado
+        if (entry.getStatus() == AttendanceStatus.CHAMADO) {
+            entry.setStatus(AttendanceStatus.CONFIRMADO);
+            entry.setConfirmationTime(java.time.Instant.now());
+            repo.save(entry);
+        } else {
+            throw new IllegalStateException("Paciente não pode confirmar presença neste estado: " + entry.getStatus());
+        }
+
+        return toDto(entry);
+    }
+
+    // CORREÇÃO: Método para marcar não comparecimento
+    public AttendanceEntryDto marcarNaoComparecimento(Long id) {
+        AttendanceEntry entry = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Entrada de atendimento não encontrada com ID: " + id));
+
+        entry.setStatus(AttendanceStatus.NAO_COMPARECEU);
+        // Opcional: Incrementar tentativas de chamada
+        entry.setAttempts((short) (entry.getAttempts() + 1));
+        repo.save(entry);
+
         return toDto(entry);
     }
 

@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">Projeto integrador de modulo 5 Android</string>
-    <string name="default_notification_channel_id" translatable="false">general_channel</string>
-    <string name="default_notification_title">Nova Notificação</string>
+    <string name="app_name">SGFH Clínica</string>
+    <string name="default_notification_channel_id">canal_padrao_sgfh</string>
+
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
 </resources>
