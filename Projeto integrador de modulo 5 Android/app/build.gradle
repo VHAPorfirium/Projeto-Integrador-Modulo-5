@@ -1,19 +1,19 @@
-// Arquivo: app/build.gradle
-
 plugins {
+    // Usando o alias do catálogo de versões, o que é uma ótima prática.
     alias(libs.plugins.android.application)
+    // Plugin do Google Services para Firebase.
     id("com.google.gms.google-services")
 }
 
 android {
     namespace "br.com.projetoIntegrador"
-    // 1. SDKs ajustados para versões estáveis
+    // Usando a SDK 34, que é a versão estável mais recente, em vez da 35 (Preview).
     compileSdk 35
 
     defaultConfig {
         applicationId "br.com.projetoIntegrador"
         minSdk 24
-        targetSdk 34 // Usando versão 34 em vez de 35 (preview) para estabilidade
+        targetSdk 34
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -30,28 +30,27 @@ android {
     }
 
     compileOptions {
-        // 2. Compatibilidade Java 8, conforme sugerido nos documentos
+        // Compatibilidade com Java 17, excelente para projetos modernos.
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    java {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(17))
-        }
-    }
+
+    // Habilita o ViewBinding para evitar o uso de findViewById.
     buildFeatures {
         viewBinding true
     }
 }
 
 dependencies {
-    // UI Padrão
+    // UI Padrão e Componentes do Android Jetpack
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
     implementation libs.constraintlayout
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
 
-    // Firebase BOM e SDKs
+    // Firebase BOM (Bill of Materials) - Gerencia as versões das bibliotecas Firebase
     implementation platform("com.google.firebase:firebase-bom:33.1.0")
     implementation "com.google.firebase:firebase-messaging"
     implementation "com.google.firebase:firebase-analytics"
@@ -59,14 +58,10 @@ dependencies {
     // Retrofit para chamadas de API
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0' // Interceptor de log
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0'
 
     // Biblioteca de Gráficos
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
-
-    // Componentes de Navegação
-    implementation libs.navigation.fragment
-    implementation libs.navigation.ui
 
     // Testes
     testImplementation libs.junit

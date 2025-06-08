@@ -21,14 +21,15 @@ public class AuthService {
 
     @Autowired
     public AuthService(PacienteRepository pacienteRepository,
-                       FuncionarioRepository funcionarioRepository,
-                       PasswordEncoder passwordEncoder) {
+            FuncionarioRepository funcionarioRepository,
+            PasswordEncoder passwordEncoder) {
         this.pacienteRepository = pacienteRepository;
         this.funcionarioRepository = funcionarioRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     public LoginResponseDto loginPaciente(LoginRequestDto loginRequestDto) {
+        // A lógica do paciente permanece a mesma, com senha
         Optional<Paciente> pacienteOptional = pacienteRepository.findByCpf(loginRequestDto.getIdentifier());
 
         if (pacienteOptional.isEmpty()) {
@@ -36,47 +37,60 @@ public class AuthService {
         }
 
         Paciente paciente = pacienteOptional.get();
+        // CORRIGIDO: Chamando o método correto para o campo booleano
         if (!paciente.getIsActive()) {
-            return new LoginResponseDto(false, "Este cadastro de paciente está inativo.", "paciente", paciente.getId(), paciente.getFullName());
+            return new LoginResponseDto(false, "Este cadastro de paciente está inativo.", "paciente", paciente.getId(),
+                    paciente.getFullName());
         }
 
         if (passwordEncoder.matches(loginRequestDto.getPassword(), paciente.getPasswordHash())) {
-            return new LoginResponseDto(true, "Login de paciente bem-sucedido!", "paciente", paciente.getId(), paciente.getFullName());
+            return new LoginResponseDto(true, "Login de paciente bem-sucedido!", "paciente", paciente.getId(),
+                    paciente.getFullName());
         } else {
             return new LoginResponseDto(false, "Senha incorreta para o paciente.", "paciente", paciente.getId(), null);
         }
     }
 
+    /**
+     * MÉTODO MODIFICADO PARA NÃO USAR SENHA
+     * Agora, o login é bem-sucedido se a matrícula for encontrada.
+     */
     public LoginResponseDto loginFuncionario(LoginRequestDto loginRequestDto) {
-        Optional<Funcionario> funcionarioOptional = funcionarioRepository.findByMatricula(loginRequestDto.getIdentifier());
+        // 1. Busca o funcionário pela matrícula
+        Optional<Funcionario> funcionarioOptional = funcionarioRepository
+                .findByMatricula(loginRequestDto.getIdentifier());
 
         if (funcionarioOptional.isEmpty()) {
-            return new LoginResponseDto(false, "Funcionário não encontrado com a matrícula fornecida.", null, null, null);
+            // 2. Se não encontrou a matrícula, retorna erro.
+            return new LoginResponseDto(false, "Funcionário não encontrado com a matrícula fornecida.", null, null,
+                    null);
         }
 
+        // 3. Se encontrou, já consideramos o login um sucesso!
         Funcionario funcionario = funcionarioOptional.get();
-         if (!funcionario.getIsActive()) {
-            return new LoginResponseDto(false, "Este cadastro de funcionário está inativo.", "funcionario", funcionario.getId(), funcionario.getFullName());
+        // CORRIGIDO: Chamando o método correto para o campo booleano
+        if (!funcionario.isActive()) {
+            return new LoginResponseDto(false, "Este cadastro de funcionário está inativo.", "funcionario",
+                    funcionario.getId(), funcionario.getFullName());
         }
 
-        if (passwordEncoder.matches(loginRequestDto.getPassword(), funcionario.getPasswordHash())) {
-            return new LoginResponseDto(true, "Login de funcionário bem-sucedido!", "funcionario", funcionario.getId(), funcionario.getFullName());
-        } else {
-            return new LoginResponseDto(false, "Senha incorreta para o funcionário.", "funcionario", funcionario.getId(), null);
-        }
+        // A senha não é mais verificada. Se o usuário existe e está ativo, o login é
+        // aprovado.
+        return new LoginResponseDto(true, "Login de funcionário bem-sucedido!", "funcionario", funcionario.getId(),
+                funcionario.getFullName());
     }
 
-    // Método para registrar/atualizar senha (exemplo)
+    // Métodos para registrar/atualizar senha (podem ser mantidos para uso futuro)
     public Paciente registrarOuAtualizarSenhaPaciente(String cpf, String novaSenha) {
         Paciente paciente = pacienteRepository.findByCpf(cpf)
-            .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
         paciente.setPasswordHash(passwordEncoder.encode(novaSenha));
         return pacienteRepository.save(paciente);
     }
 
     public Funcionario registrarOuAtualizarSenhaFuncionario(String matricula, String novaSenha) {
         Funcionario funcionario = funcionarioRepository.findByMatricula(matricula)
-            .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
         funcionario.setPasswordHash(passwordEncoder.encode(novaSenha));
         return funcionarioRepository.save(funcionario);
     }

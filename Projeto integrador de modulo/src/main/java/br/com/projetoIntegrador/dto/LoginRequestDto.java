@@ -2,22 +2,15 @@ package br.com.projetoIntegrador.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
+// Usando uma classe para ter getters e setters que seu código já usa
 public class LoginRequestDto {
-    @NotBlank(message = "O identificador (CPF/Matrícula) não pode estar em branco.")
+
+    @NotBlank(message = "O identificador (CPF/Matrícula) é obrigatório.")
     private String identifier;
 
-    @NotBlank(message = "A senha não pode estar em branco.")
+    // A senha não é mais obrigatória para o funcionário, mas é para o paciente.
+    // Deixamos o campo existir, mas não validamos aqui para ser flexível.
     private String password;
-
-    // Construtor padrão
-    public LoginRequestDto() {
-    }
-
-    // Construtor com todos os campos
-    public LoginRequestDto(String identifier, String password) {
-        this.identifier = identifier;
-        this.password = password;
-    }
 
     // Getters e Setters
     public String getIdentifier() {

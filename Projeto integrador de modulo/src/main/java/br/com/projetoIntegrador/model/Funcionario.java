@@ -1,12 +1,7 @@
 package br.com.projetoIntegrador.model;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.Objects;
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 @Entity
@@ -17,7 +12,7 @@ public class Funcionario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true, nullable = false)
     private String matricula;
 
     @Column(name = "full_name", nullable = false)
@@ -26,34 +21,30 @@ public class Funcionario {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    /**
+     * Aqui dizemos que nosso campo “role” usa o enum EmployeeRole
+     * e que, no banco, a coluna é do tipo employee_role (ENUM do Postgres).
+     */
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EmployeeRole role = EmployeeRole.RECEPCIONISTA;
+    @Column(name = "role", nullable = false, columnDefinition = "employee_role")
+    private EmployeeRole role;
 
-    @Column(name = "is_active")
-    private Boolean isActive = true;
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
 
-    @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private Instant createdAt;
+    private OffsetDateTime createdAt;
 
-    @UpdateTimestamp
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private OffsetDateTime updatedAt;
 
+    // Relacionamento Many-to-Many com specialties (opcional – caso você tenha essa
+    // entidade).
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "employee_specialties",
-        joinColumns = @JoinColumn(name = "employee_id"),
-        inverseJoinColumns = @JoinColumn(name = "specialty_id")
-    )
-    private Set<Specialty> specialties = new HashSet<>();
+    @JoinTable(name = "employee_specialties", joinColumns = @JoinColumn(name = "employee_id"), inverseJoinColumns = @JoinColumn(name = "specialty_id"))
+    private Set<Specialty> specialties;
 
-    // Construtores
-    public Funcionario() {
-    }
-
-    // Getters e Setters
+    // --- Getters e Setters ---
     public Long getId() {
         return id;
     }
@@ -94,27 +85,27 @@ public class Funcionario {
         this.role = role;
     }
 
-    public Boolean getIsActive() {
+    public boolean isActive() {
         return isActive;
     }
 
-    public void setIsActive(Boolean active) {
-        isActive = active;
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
     }
 
-    public Instant getCreatedAt() {
+    public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Instant createdAt) {
+    public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Instant getUpdatedAt() {
+    public OffsetDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Instant updatedAt) {
+    public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -124,29 +115,5 @@ public class Funcionario {
 
     public void setSpecialties(Set<Specialty> specialties) {
         this.specialties = specialties;
-    }
-
-    // equals, hashCode, toString
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Funcionario that = (Funcionario) o;
-        return Objects.equals(id, that.id) && Objects.equals(matricula, that.matricula);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, matricula);
-    }
-
-    @Override
-    public String toString() {
-        return "Funcionario{" +
-               "id=" + id +
-               ", matricula='" + matricula + '\'' +
-               ", fullName='" + fullName + '\'' +
-               ", role=" + role +
-               '}';
     }
 }

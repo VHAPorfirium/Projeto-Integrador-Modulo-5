@@ -12,53 +12,16 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import androidx.annotation.NonNull;
+import com.google.gson.Gson; // Importar Gson
+import java.io.IOException; // Importar IOException
 
 public class PacienteRepository {
 
-    private ApiService apiService;
+    private final ApiService apiService;
+    private final Gson gson = new Gson(); // Instanciar Gson para parsing de erro
 
     public PacienteRepository() {
         this.apiService = ApiClient.get();
-    }
-
-    public LiveData<LoginResponseDto> loginPaciente(String cpf, String senha) {
-        MutableLiveData<LoginResponseDto> result = new MutableLiveData<>();
-        LoginRequestDto loginRequest = new LoginRequestDto(cpf, senha);
-        apiService.loginPaciente(loginRequest).enqueue(new Callback<LoginResponseDto>() {
-            @Override
-            public void onResponse(@NonNull Call<LoginResponseDto> call, @NonNull Response<LoginResponseDto> response) {
-                if (response.isSuccessful()) {
-                    result.setValue(response.body());
-                } else {
-                    if (response.errorBody() != null) {
-                        try {
-                            // LINHA CORRIGIDA
-                            LoginResponseDto errorResponse = (LoginResponseDto) ApiClient.getRetrofit().responseBodyConverter(LoginResponseDto.class, new java.lang.annotation.Annotation[0]).convert(response.errorBody());
-                            result.setValue(errorResponse);
-                        } catch (Exception e) {
-                            LoginResponseDto error = new LoginResponseDto();
-                            error.setSuccess(false);
-                            error.setMessage("Erro ao processar login: " + response.code());
-                            result.setValue(error);
-                        }
-                    } else {
-                        LoginResponseDto error = new LoginResponseDto();
-                        error.setSuccess(false);
-                        error.setMessage("Erro de login: " + response.code());
-                        result.setValue(error);
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<LoginResponseDto> call, @NonNull Throwable t) {
-                LoginResponseDto error = new LoginResponseDto();
-                error.setSuccess(false);
-                error.setMessage("Falha na comunicação: " + t.getMessage());
-                result.setValue(error);
-            }
-        });
-        return result;
     }
 
     public LiveData<LoginResponseDto> loginFuncionario(String matricula, String senha) {
@@ -67,26 +30,46 @@ public class PacienteRepository {
         apiService.loginFuncionario(loginRequest).enqueue(new Callback<LoginResponseDto>() {
             @Override
             public void onResponse(@NonNull Call<LoginResponseDto> call, @NonNull Response<LoginResponseDto> response) {
-                if (response.isSuccessful()) {
+                // CORREÇÃO PRINCIPAL: A lógica de sucesso/falha agora é tratada aqui.
+                if (response.isSuccessful() && response.body() != null) {
+                    // Se a API respondeu com sucesso (HTTP 200), nós usamos o corpo da resposta.
+                    // O próprio DTO nos dirá se o login foi um 'success: true' ou 'success: false'.
                     result.setValue(response.body());
                 } else {
-                    if (response.errorBody() != null) {
-                        try {
-                            // LINHA CORRIGIDA
-                            LoginResponseDto errorResponse = (LoginResponseDto) ApiClient.getRetrofit().responseBodyConverter(LoginResponseDto.class, new java.lang.annotation.Annotation[0]).convert(response.errorBody());
-                            result.setValue(errorResponse);
-                        } catch (Exception e) {
-                            LoginResponseDto error = new LoginResponseDto();
-                            error.setSuccess(false);
-                            error.setMessage("Erro ao processar login: " + response.code());
-                            result.setValue(error);
-                        }
-                    } else {
-                        LoginResponseDto error = new LoginResponseDto();
-                        error.setSuccess(false);
-                        error.setMessage("Erro de login: " + response.code());
-                        result.setValue(error);
-                    }
+                    // Se a resposta não foi bem-sucedida (ex: erro 404, 500), tratamos como falha.
+                    LoginResponseDto error = new LoginResponseDto();
+                    error.setSuccess(false);
+                    error.setMessage("Erro de comunicação com o servidor: " + response.code());
+                    result.setValue(error);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<LoginResponseDto> call, @NonNull Throwable t) {
+                // Erro de rede (sem conexão, timeout, etc.)
+                LoginResponseDto error = new LoginResponseDto();
+                error.setSuccess(false);
+                error.setMessage("Falha na comunicação: " + t.getMessage());
+                result.setValue(error);
+            }
+        });
+        return result;
+    }
+
+    public LiveData<LoginResponseDto> loginPaciente(String cpf, String senha) {
+        MutableLiveData<LoginResponseDto> result = new MutableLiveData<>();
+        LoginRequestDto loginRequest = new LoginRequestDto(cpf, senha);
+        apiService.loginPaciente(loginRequest).enqueue(new Callback<LoginResponseDto>() {
+            @Override
+            public void onResponse(@NonNull Call<LoginResponseDto> call, @NonNull Response<LoginResponseDto> response) {
+                // Lógica corrigida, igual ao login de funcionário
+                if (response.isSuccessful() && response.body() != null) {
+                    result.setValue(response.body());
+                } else {
+                    LoginResponseDto error = new LoginResponseDto();
+                    error.setSuccess(false);
+                    error.setMessage("Erro de comunicação com o servidor: " + response.code());
+                    result.setValue(error);
                 }
             }
 
@@ -100,6 +83,8 @@ public class PacienteRepository {
         });
         return result;
     }
+
+    // --- Outros métodos do repositório permanecem os mesmos ---
 
     public LiveData<PacienteDto> createPaciente(PacienteDto pacienteDto) {
         MutableLiveData<PacienteDto> result = new MutableLiveData<>();

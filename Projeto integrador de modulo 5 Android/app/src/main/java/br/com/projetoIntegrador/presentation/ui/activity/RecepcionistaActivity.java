@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
@@ -130,8 +129,12 @@ public class RecepcionistaActivity extends AppCompatActivity {
 
     private void setupAdapters() {
         recyclerViewFilaAtualRecepcao.setLayoutManager(new LinearLayoutManager(this));
-        filaRecepcaoAdapter = new FilaRecepcaoAdapter(this, new ArrayList<>(), mapNomesPacientes, mapNomesEspecialidades, null);
+
+        // ===== A CORREÇÃO PRINCIPAL ESTÁ AQUI =====
+        // Usando o construtor correto (e simples) do Adapter.
+        filaRecepcaoAdapter = new FilaRecepcaoAdapter();
         recyclerViewFilaAtualRecepcao.setAdapter(filaRecepcaoAdapter);
+        // ==========================================
 
         ArrayAdapter<String> especialidadesArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
         especialidadesArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -155,7 +158,6 @@ public class RecepcionistaActivity extends AppCompatActivity {
     }
 
     private void observarViewModels() {
-        // *** MUDANÇA AQUI: de getAllPacientes para listAllPacientes ***
         pacienteViewModel.listAllPacientes().observe(this, pacientes -> {
             if (pacientes != null) {
                 listaPacientesCache.clear();
@@ -168,7 +170,6 @@ public class RecepcionistaActivity extends AppCompatActivity {
             }
         });
 
-        // *** MUDANÇA AQUI: de getAllSpecialties para listAllSpecialties ***
         specialtyViewModel.listAllSpecialties().observe(this, specialties -> {
             if (specialties != null) {
                 listaEspecialidadesCache.clear();
@@ -197,7 +198,6 @@ public class RecepcionistaActivity extends AppCompatActivity {
                         .sorted(Comparator.comparing(AttendanceEntryDto::getCheckInTime, Comparator.nullsLast(Comparator.naturalOrder())))
                         .collect(Collectors.toList());
 
-                // CORREÇÃO: O nome do método é 'setEntries', e não 'updateData' ou outro.
                 filaRecepcaoAdapter.setEntries(filaOrdenada, mapNomesPacientes, mapNomesEspecialidades);
                 atualizarPosicaoSenhaGerada(filaOrdenada);
             } else {
@@ -208,9 +208,7 @@ public class RecepcionistaActivity extends AppCompatActivity {
     }
 
     private void carregarDadosIniciais() {
-        // *** MUDANÇA AQUI: de fetchAllPacientes para listAllPacientes ***
         pacienteViewModel.listAllPacientes();
-        // *** MUDANÇA AQUI: de fetchAllSpecialties para listAllSpecialties ***
         specialtyViewModel.listAllSpecialties();
     }
 
@@ -253,6 +251,7 @@ public class RecepcionistaActivity extends AppCompatActivity {
             if (entryDto != null && entryDto.getId() != null) {
                 Toast.makeText(RecepcionistaActivity.this, "Senha gerada e paciente na fila!", Toast.LENGTH_LONG).show();
                 tvSenhaGerada.setText("E" + entryDto.getId());
+                // Remove o observer para não gerar senhas duplicadas
                 attendanceEntryViewModel.createAttendanceEntry(novaEntrada).removeObservers(this);
                 carregarFilaAtual();
                 limparCamposCheckin();
@@ -289,7 +288,6 @@ public class RecepcionistaActivity extends AppCompatActivity {
                     }
                 }
                 if (!encontrado) {
-                    // *** MUDANÇA AQUI: de getAllAttendanceEntries para listAllAttendanceEntries ***
                     if(attendanceEntryViewModel.listAllAttendanceEntries().getValue() != null){
                         for(AttendanceEntryDto e : attendanceEntryViewModel.listAllAttendanceEntries().getValue()){
                             if(e.getId().equals(entryIdGerado) && ("ATENDIDO".equalsIgnoreCase(e.getStatus()) || "NAO_COMPARECEU".equalsIgnoreCase(e.getStatus()))){
@@ -309,7 +307,6 @@ public class RecepcionistaActivity extends AppCompatActivity {
 
     private void carregarFilaAtual() {
         Log.d(TAG, "Carregando fila atual...");
-        // *** MUDANÇA AQUI: de fetchAllAttendanceEntries para listAllAttendanceEntries ***
         attendanceEntryViewModel.listAllAttendanceEntries();
     }
 
