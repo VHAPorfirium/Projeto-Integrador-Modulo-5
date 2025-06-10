@@ -13,7 +13,7 @@ public class PacienteDto {
     private String fullName;
 
     @SerializedName("birthDate")
-    private String birthDate; // API usa LocalDate
+    private List<Integer> birthDate; // API usa LocalDate, mas o JSON mostra um array [ano, mes, dia]
 
     @SerializedName("cpf")
     private String cpf;
@@ -65,6 +65,28 @@ public class PacienteDto {
     public PacienteDto() {
     }
 
+    // Construtor para criação/atualização (sem ID, createdAt, updatedAt e profilePhoto)
+    public PacienteDto(String fullName, List<Integer> birthDate, String cpf, String password,
+                       String rg, String email, String phone, String addressStreet,
+                       String addressCity, String addressState, String addressZip,
+                       List<String> allergies, List<String> medications, Boolean isActive) {
+        this.fullName = fullName;
+        this.birthDate = birthDate;
+        this.cpf = cpf;
+        this.password = password;
+        this.rg = rg;
+        this.email = email;
+        this.phone = phone;
+        this.addressStreet = addressStreet;
+        this.addressCity = addressCity;
+        this.addressState = addressState;
+        this.addressZip = addressZip;
+        this.allergies = allergies;
+        this.medications = medications;
+        this.isActive = isActive;
+    }
+
+
     // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -72,8 +94,9 @@ public class PacienteDto {
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
 
-    public String getBirthDate() { return birthDate; }
-    public void setBirthDate(String birthDate) { this.birthDate = birthDate; }
+    // CORREÇÃO AQUI: Retorno e parâmetro do setter para List<Integer>
+    public List<Integer> getBirthDate() { return birthDate; }
+    public void setBirthDate(List<Integer> birthDate) { this.birthDate = birthDate; }
 
     public String getCpf() { return cpf; }
     public void setCpf(String cpf) { this.cpf = cpf; }

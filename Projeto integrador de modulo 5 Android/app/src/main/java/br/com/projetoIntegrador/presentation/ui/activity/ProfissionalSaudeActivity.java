@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import java.util.ArrayList; // Importar ArrayList
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -102,28 +103,43 @@ public class ProfissionalSaudeActivity extends AppCompatActivity
 
         // 6) Observadores e carregamento inicial
         observarViewModels();
-        carregarDadosIniciais();
+        carregarDadosIniciais(); // Inicia o carregamento
     }
 
     private void observarViewModels() {
         // Carrega mapeamento de nomes de pacientes
         pacienteViewModel.listAllPacientes().observe(this, pacientes -> {
-            if (pacientes != null) {
+            if (pacientes != null) { // Agora 'pacientes' nunca será null se o backend retornar uma lista vazia
+                Log.d(TAG, "Observador Pacientes: Recebida lista de tamanho: " + pacientes.size());
                 mapNomesPacientes.clear();
                 for (PacienteDto p : pacientes) {
                     mapNomesPacientes.put(p.getId(), p.getFullName());
                 }
+                Log.d(TAG, "Observador Pacientes: Mapeamento de nomes de pacientes preenchido. Tamanho: " + mapNomesPacientes.size());
+                carregarFila(); // Tenta carregar a fila novamente após pacientes serem processados
+            } else {
+                // Este else agora só será atingido se houver um problema muito grave
+                // que faça o LiveData retornar um null explícito ou não ser observado.
+                Log.e(TAG, "Observador Pacientes: Lista de pacientes é NULA (problema inesperado)!");
+                Toast.makeText(this, "Erro: Não foi possível carregar dados dos pacientes.", Toast.LENGTH_LONG).show();
+                // Ainda assim, podemos tentar carregar a fila, ela só ficará vazia
                 carregarFila();
             }
         });
 
         // Carrega mapeamento de nomes de especialidades
         specialtyViewModel.listAllSpecialties().observe(this, specs -> {
-            if (specs != null) {
+            if (specs != null) { // Agora 'specs' nunca será null se o backend retornar uma lista vazia
+                Log.d(TAG, "Observador Especialidades: Recebida lista de tamanho: " + specs.size());
                 mapNomesEspecialidades.clear();
                 for (SpecialtyDto s : specs) {
                     mapNomesEspecialidades.put(s.getId(), s.getName());
                 }
+                Log.d(TAG, "Observador Especialidades: Mapeamento de nomes de especialidades preenchido. Tamanho: " + mapNomesEspecialidades.size());
+                carregarFila(); // Tenta carregar a fila novamente após especialidades serem processadas
+            } else {
+                Log.e(TAG, "Observador Especialidades: Lista de especialidades é NULA (problema inesperado)!");
+                Toast.makeText(this, "Erro: Não foi possível carregar dados das especialidades.", Toast.LENGTH_LONG).show();
                 carregarFila();
             }
         });
@@ -131,37 +147,57 @@ public class ProfissionalSaudeActivity extends AppCompatActivity
         // Carrega a lista de atendimentos (fila)
         attendanceEntryViewModel.listAllAttendanceEntries()
                 .observe(this, entries -> {
-                    if (entries != null
-                            && !mapNomesPacientes.isEmpty()
-                            && !mapNomesEspecialidades.isEmpty()) {
+                    if (entries != null) { // Agora 'entries' nunca será null
+                        Log.d(TAG, "Observador Atendimentos: Entradas brutas recebidas: " + entries.size());
+                        Log.d(TAG, "Observador Atendimentos: mapNomesPacientes is empty? " + mapNomesPacientes.isEmpty());
+                        Log.d(TAG, "Observador Atendimentos: mapNomesEspecialidades is empty? " + mapNomesEspecialidades.isEmpty());
 
-                        List<AttendanceEntryDto> filaFiltrada = entries.stream()
-                                .filter(e ->
-                                        "AGUARDANDO".equalsIgnoreCase(e.getStatus()) ||
-                                                "CONFIRMADO".equalsIgnoreCase(e.getStatus())
-                                )
-                                .sorted(Comparator.comparing(
-                                        AttendanceEntryDto::getCheckInTime,
-                                        Comparator.nullsLast(Comparator.naturalOrder())
-                                ))
-                                .collect(Collectors.toList());
+                        if (!mapNomesPacientes.isEmpty() && !mapNomesEspecialidades.isEmpty()) {
+                            List<AttendanceEntryDto> filaFiltrada = entries.stream()
+                                    .filter(e ->
+                                            "AGUARDANDO".equalsIgnoreCase(e.getStatus()) ||
+                                                    "CONFIRMADO".equalsIgnoreCase(e.getStatus())
+                                    )
+                                    .sorted(Comparator.comparing(
+                                            AttendanceEntryDto::getCheckInTime,
+                                            Comparator.nullsLast(Comparator.naturalOrder())
+                                    ))
+                                    .collect(Collectors.toList());
 
-                        filaAdapter.updateData(
-                                filaFiltrada,
-                                mapNomesPacientes,
-                                mapNomesEspecialidades
-                        );
+                            Log.d(TAG, "Observador Atendimentos: Fila filtrada e ordenada. Tamanho final: " + filaFiltrada.size());
 
-                        boolean vazia = filaFiltrada.isEmpty();
-                        binding.tvFilaVaziaProfissional
-                                .setVisibility(vazia ? View.VISIBLE : View.GONE);
-                        binding.recyclerViewFilaProfissional
-                                .setVisibility(vazia ? View.GONE : View.VISIBLE);
+                            filaAdapter.updateData(
+                                    filaFiltrada,
+                                    mapNomesPacientes,
+                                    mapNomesEspecialidades
+                            );
 
-                    } else if (entries == null) {
+                            boolean vazia = filaFiltrada.isEmpty();
+                            binding.tvFilaVaziaProfissional
+                                    .setVisibility(vazia ? View.VISIBLE : View.GONE);
+                            binding.recyclerViewFilaProfissional
+                                    .setVisibility(vazia ? View.GONE : View.VISIBLE);
+                            Log.d(TAG, "Observador Atendimentos: Fila visível? " + (!vazia));
+
+                            if (vazia) {
+                                binding.tvFilaVaziaProfissional.setText("Nenhum paciente aguardando no momento.");
+                            }
+
+                        } else {
+                            Log.w(TAG, "Observador Atendimentos: Mapas de nomes ainda não preenchidos ou vazios. Tentando novamente na próxima...");
+                            // Se os mapas estão vazios, a fila não pode ser populada corretamente.
+                            // Mostrar mensagem de "carregando" ou "aguardando dados" seria ideal.
+                            binding.tvFilaVaziaProfissional.setText("Carregando dados da fila...");
+                            binding.tvFilaVaziaProfissional.setVisibility(View.VISIBLE);
+                            binding.recyclerViewFilaProfissional.setVisibility(View.GONE);
+                        }
+                    } else {
+                        // Este bloco só deve ser atingido se o LiveData de attendanceEntries retornar null,
+                        // o que agora é evitado pelo Repositório ao retornar lista vazia em caso de falha.
+                        Log.e(TAG, "Observador Atendimentos: Lista de entradas é NULA (problema inesperado)!");
                         Toast.makeText(
                                 this,
-                                "Erro ao carregar a fila.",
+                                "Erro ao carregar a fila de atendimentos.",
                                 Toast.LENGTH_SHORT
                         ).show();
                         binding.tvFilaVaziaProfissional
@@ -176,37 +212,52 @@ public class ProfissionalSaudeActivity extends AppCompatActivity
 
     private void carregarDadosIniciais() {
         // Dispara carregamento de pacientes e especialidades
+        Log.d(TAG, "Disparando carregamento inicial de pacientes e especialidades.");
         pacienteViewModel.listAllPacientes();
         specialtyViewModel.listAllSpecialties();
     }
 
     private void carregarFila() {
-        // Só recarrega quando já temos os mapas de nomes
-        if (!mapNomesPacientes.isEmpty()
-                && !mapNomesEspecialidades.isEmpty()) {
+        // Só recarrega a fila de atendimentos quando já temos os mapas de nomes
+        // (ou pelo menos um mapa não nulo, mesmo que vazio).
+        if (mapNomesPacientes != null && mapNomesEspecialidades != null &&
+                !mapNomesPacientes.isEmpty() && !mapNomesEspecialidades.isEmpty()) {
+            Log.d(TAG, "Carregando fila: Mapas de nomes estão prontos. Solicitando entradas de atendimento.");
             attendanceEntryViewModel.listAllAttendanceEntries();
         } else {
-            Log.d(TAG, "Aguardando mapeamentos de nomes...");
+            Log.d(TAG, "Carregando fila: Aguardando mapeamentos de nomes. Pacientes size: " + mapNomesPacientes.size() + ", Especialidades size: " + mapNomesEspecialidades.size());
+            binding.tvFilaVaziaProfissional.setText("Carregando dados da fila...");
+            binding.tvFilaVaziaProfissional.setVisibility(View.VISIBLE);
+            binding.recyclerViewFilaProfissional.setVisibility(View.GONE);
         }
     }
+
 
     private void chamarProximoPaciente() {
         List<AttendanceEntryDto> atual = filaAdapter.getCurrentList();
         AttendanceEntryDto proximo = null;
 
         if (atual != null && !atual.isEmpty()) {
+            // Prioriza pacientes CONFIRMADO, senão pega o primeiro AGUARDANDO
             proximo = atual.stream()
                     .filter(e -> "CONFIRMADO".equalsIgnoreCase(e.getStatus()))
                     .findFirst()
-                    .orElse(atual.get(0));
+                    .orElse(
+                            atual.stream()
+                                    .filter(e -> "AGUARDANDO".equalsIgnoreCase(e.getStatus()))
+                                    .findFirst()
+                                    .orElse(null)
+                    );
         }
 
         if (proximo != null) {
+            Log.d(TAG, "ChamarProximoPaciente: Próximo paciente a ser chamado: ID " + proximo.getId() + ", Status: " + proximo.getStatus());
             Intent intent = new Intent(this, ChamarProximoActivity.class);
             intent.putExtra("ATTENDANCE_ENTRY_ID", proximo.getId());
             intent.putExtra("PACIENTE_ID", proximo.getPacienteId());
             startActivity(intent);
         } else {
+            Log.d(TAG, "chamarProximoPaciente: Nao ha pacientes aguardando ou confirmados na fila.");
             Toast.makeText(
                     this,
                     "Não há pacientes aguardando ou confirmados na fila.",
@@ -218,6 +269,7 @@ public class ProfissionalSaudeActivity extends AppCompatActivity
     @Override
     public void onItemClick(AttendanceEntryDto entrada) {
         // Clicou em um item da lista: chama esse paciente
+        Log.d(TAG, "onItemClick: Item da fila clicado. ID da entrada: " + entrada.getId());
         Intent intent = new Intent(this, ChamarProximoActivity.class);
         intent.putExtra("ATTENDANCE_ENTRY_ID", entrada.getId());
         intent.putExtra("PACIENTE_ID", entrada.getPacienteId());
@@ -233,11 +285,13 @@ public class ProfissionalSaudeActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_refresh_fila_profissional) {
-            carregarDadosIniciais();
+            Log.d(TAG, "Menu: Atualizando fila manualmente.");
+            carregarDadosIniciais(); // Recarrega tudo
             Toast.makeText(this, "Fila atualizada", Toast.LENGTH_SHORT).show();
             return true;
         }
         if (item.getItemId() == R.id.action_logout_profissional) {
+            Log.d(TAG, "Menu: Realizando logout do profissional.");
             getSharedPreferences(
                     MyFirebaseService.SHARED_PREFS_NAME,
                     MODE_PRIVATE
@@ -256,6 +310,7 @@ public class ProfissionalSaudeActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume: Agendando atualização periódica da fila.");
         // Agenda atualização periódica da fila
         refreshFilaRunnable = () -> {
             carregarFila();
@@ -267,6 +322,7 @@ public class ProfissionalSaudeActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(TAG, "onPause: Removendo callbacks de atualização da fila.");
         handler.removeCallbacks(refreshFilaRunnable);
     }
 }

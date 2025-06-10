@@ -2,6 +2,7 @@ package br.com.projetoIntegrador.repository;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import java.util.ArrayList; // Importar ArrayList
 import java.util.List;
 import br.com.projetoIntegrador.network.ApiClient;
 import br.com.projetoIntegrador.network.ApiService;
@@ -12,13 +13,15 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import androidx.annotation.NonNull;
-import com.google.gson.Gson; // Importar Gson
-import java.io.IOException; // Importar IOException
+import com.google.gson.Gson;
+import java.io.IOException;
+import android.util.Log; // Importar Log
 
 public class PacienteRepository {
 
+    private static final String TAG = "PacienteRepository"; // TAG para logs
     private final ApiService apiService;
-    private final Gson gson = new Gson(); // Instanciar Gson para parsing de erro
+    private final Gson gson = new Gson();
 
     public PacienteRepository() {
         this.apiService = ApiClient.get();
@@ -30,26 +33,32 @@ public class PacienteRepository {
         apiService.loginFuncionario(loginRequest).enqueue(new Callback<LoginResponseDto>() {
             @Override
             public void onResponse(@NonNull Call<LoginResponseDto> call, @NonNull Response<LoginResponseDto> response) {
-                // CORREÇÃO PRINCIPAL: A lógica de sucesso/falha agora é tratada aqui.
                 if (response.isSuccessful() && response.body() != null) {
-                    // Se a API respondeu com sucesso (HTTP 200), nós usamos o corpo da resposta.
-                    // O próprio DTO nos dirá se o login foi um 'success: true' ou 'success: false'.
+                    Log.d(TAG, "loginFuncionario: Resposta bem-sucedida: " + response.body().getMessage());
                     result.setValue(response.body());
                 } else {
-                    // Se a resposta não foi bem-sucedida (ex: erro 404, 500), tratamos como falha.
+                    String errorBody = "";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorBody = response.errorBody().string();
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Erro ao ler errorBody: " + e.getMessage());
+                    }
+                    Log.e(TAG, "loginFuncionario: Resposta não bem-sucedida. Código: " + response.code() + ", Mensagem: " + response.message() + ", Body: " + errorBody);
                     LoginResponseDto error = new LoginResponseDto();
                     error.setSuccess(false);
-                    error.setMessage("Erro de comunicação com o servidor: " + response.code());
+                    error.setMessage("Erro de comunicação com o servidor: " + response.code() + " - " + response.message());
                     result.setValue(error);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<LoginResponseDto> call, @NonNull Throwable t) {
-                // Erro de rede (sem conexão, timeout, etc.)
+                Log.e(TAG, "loginFuncionario: Falha na comunicação de rede: " + t.getMessage(), t);
                 LoginResponseDto error = new LoginResponseDto();
                 error.setSuccess(false);
-                error.setMessage("Falha na comunicação: " + t.getMessage());
+                error.setMessage("Falha na comunicação de rede: " + t.getMessage());
                 result.setValue(error);
             }
         });
@@ -62,40 +71,63 @@ public class PacienteRepository {
         apiService.loginPaciente(loginRequest).enqueue(new Callback<LoginResponseDto>() {
             @Override
             public void onResponse(@NonNull Call<LoginResponseDto> call, @NonNull Response<LoginResponseDto> response) {
-                // Lógica corrigida, igual ao login de funcionário
                 if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "loginPaciente: Resposta bem-sucedida: " + response.body().getMessage());
                     result.setValue(response.body());
                 } else {
+                    String errorBody = "";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorBody = response.errorBody().string();
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Erro ao ler errorBody: " + e.getMessage());
+                    }
+                    Log.e(TAG, "loginPaciente: Resposta não bem-sucedida. Código: " + response.code() + ", Mensagem: " + response.message() + ", Body: " + errorBody);
                     LoginResponseDto error = new LoginResponseDto();
                     error.setSuccess(false);
-                    error.setMessage("Erro de comunicação com o servidor: " + response.code());
+                    error.setMessage("Erro de comunicação com o servidor: " + response.code() + " - " + response.message());
                     result.setValue(error);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<LoginResponseDto> call, @NonNull Throwable t) {
+                Log.e(TAG, "loginPaciente: Falha na comunicação de rede: " + t.getMessage(), t);
                 LoginResponseDto error = new LoginResponseDto();
                 error.setSuccess(false);
-                error.setMessage("Falha na comunicação: " + t.getMessage());
+                error.setMessage("Falha na comunicação de rede: " + t.getMessage());
                 result.setValue(error);
             }
         });
         return result;
     }
 
-    // --- Outros métodos do repositório permanecem os mesmos ---
-
     public LiveData<PacienteDto> createPaciente(PacienteDto pacienteDto) {
         MutableLiveData<PacienteDto> result = new MutableLiveData<>();
         apiService.createPaciente(pacienteDto).enqueue(new Callback<PacienteDto>() {
             @Override
             public void onResponse(@NonNull Call<PacienteDto> call, @NonNull Response<PacienteDto> response) {
-                result.setValue(response.isSuccessful() ? response.body() : null);
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "createPaciente: Sucesso! Paciente criado: " + response.body().getFullName());
+                    result.setValue(response.body());
+                } else {
+                    String errorBody = "";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorBody = response.errorBody().string();
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Erro ao ler errorBody: " + e.getMessage());
+                    }
+                    Log.e(TAG, "createPaciente: Falha. Código: " + response.code() + ", Mensagem: " + response.message() + ", Body: " + errorBody);
+                    result.setValue(null); // Ainda pode ser null se a criação falhar
+                }
             }
 
             @Override
             public void onFailure(@NonNull Call<PacienteDto> call, @NonNull Throwable t) {
+                Log.e(TAG, "createPaciente: Falha na rede: " + t.getMessage(), t);
                 result.setValue(null);
             }
         });
@@ -107,12 +139,29 @@ public class PacienteRepository {
         apiService.listAllPacientes().enqueue(new Callback<List<PacienteDto>>() {
             @Override
             public void onResponse(@NonNull Call<List<PacienteDto>> call, @NonNull Response<List<PacienteDto>> response) {
-                result.setValue(response.isSuccessful() ? response.body() : null);
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "listAllPacientes: Sucesso! Tamanho da lista: " + response.body().size());
+                    result.setValue(response.body());
+                } else {
+                    String errorBody = "";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorBody = response.errorBody().string();
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Erro ao ler errorBody: " + e.getMessage());
+                    }
+                    Log.e(TAG, "listAllPacientes: Resposta não bem-sucedida. Código: " + response.code() + ", Mensagem: " + response.message() + ", Body: " + errorBody);
+                    // IMPORTANTE: Retorna uma lista vazia, não null, para não quebrar a lógica de UI
+                    result.setValue(new ArrayList<>());
+                }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<PacienteDto>> call, @NonNull Throwable t) {
-                result.setValue(null);
+                Log.e(TAG, "listAllPacientes: Falha na conexão de rede: " + t.getMessage(), t);
+                // IMPORTANTE: Retorna uma lista vazia, não null, para não quebrar a lógica de UI
+                result.setValue(new ArrayList<>());
             }
         });
         return result;
@@ -123,11 +172,26 @@ public class PacienteRepository {
         apiService.getPacienteById(pacienteId).enqueue(new Callback<PacienteDto>() {
             @Override
             public void onResponse(@NonNull Call<PacienteDto> call, @NonNull Response<PacienteDto> response) {
-                result.setValue(response.isSuccessful() ? response.body() : null);
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "getPacienteById: Sucesso para ID " + pacienteId + ": " + response.body().getFullName());
+                    result.setValue(response.body());
+                } else {
+                    String errorBody = "";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorBody = response.errorBody().string();
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Erro ao ler errorBody: " + e.getMessage());
+                    }
+                    Log.e(TAG, "getPacienteById: Falha para ID " + pacienteId + ". Código: " + response.code() + ", Mensagem: " + response.message() + ", Body: " + errorBody);
+                    result.setValue(null); // Pode ser null se o paciente não for encontrado
+                }
             }
 
             @Override
             public void onFailure(@NonNull Call<PacienteDto> call, @NonNull Throwable t) {
+                Log.e(TAG, "getPacienteById: Falha na rede para ID " + pacienteId + ": " + t.getMessage(), t);
                 result.setValue(null);
             }
         });
@@ -139,11 +203,26 @@ public class PacienteRepository {
         apiService.updatePaciente(pacienteId, pacienteDto).enqueue(new Callback<PacienteDto>() {
             @Override
             public void onResponse(@NonNull Call<PacienteDto> call, @NonNull Response<PacienteDto> response) {
-                result.setValue(response.isSuccessful() ? response.body() : null);
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "updatePaciente: Sucesso para ID " + pacienteId + ": " + response.body().getFullName());
+                    result.setValue(response.body());
+                } else {
+                    String errorBody = "";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorBody = response.errorBody().string();
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Erro ao ler errorBody: " + e.getMessage());
+                    }
+                    Log.e(TAG, "updatePaciente: Falha para ID " + pacienteId + ". Código: " + response.code() + ", Mensagem: " + response.message() + ", Body: " + errorBody);
+                    result.setValue(null);
+                }
             }
 
             @Override
             public void onFailure(@NonNull Call<PacienteDto> call, @NonNull Throwable t) {
+                Log.e(TAG, "updatePaciente: Falha na rede para ID " + pacienteId + ": " + t.getMessage(), t);
                 result.setValue(null);
             }
         });
@@ -155,11 +234,26 @@ public class PacienteRepository {
         apiService.deletePaciente(pacienteId).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                success.setValue(response.isSuccessful());
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "deletePaciente: Sucesso para ID " + pacienteId);
+                    success.setValue(true);
+                } else {
+                    String errorBody = "";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorBody = response.errorBody().string();
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Erro ao ler errorBody: " + e.getMessage());
+                    }
+                    Log.e(TAG, "deletePaciente: Falha para ID " + pacienteId + ". Código: " + response.code() + ", Mensagem: " + response.message() + ", Body: " + errorBody);
+                    success.setValue(false);
+                }
             }
 
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Log.e(TAG, "deletePaciente: Falha na rede para ID " + pacienteId + ": " + t.getMessage(), t);
                 success.setValue(false);
             }
         });

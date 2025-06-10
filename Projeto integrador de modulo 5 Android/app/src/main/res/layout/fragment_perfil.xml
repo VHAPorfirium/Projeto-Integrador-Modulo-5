@@ -1,203 +1,234 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E6F4FA"
-    android:padding="16dp"
+    android:background="@color/design_slate_50"
+    android:fillViewport="true"
     tools:context=".presentation.ui.fragment.PerfilFragment">
 
     <LinearLayout
+        android:id="@+id/perfil_layout_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="24dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Meu Perfil"
-            android:textSize="24sp"
+            android:textColor="@color/design_primary_text"
+            android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="#1A73E8"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="32dp"/>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
+        <!-- Usaremos um estilo para os rótulos e outro para os dados -->
+        <TextView
+            style="@style/TextAppearance.Material3.LabelLarge"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="12dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPerfilNomeCompleto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Nome Completo"
-                android:inputType="textPersonName"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="12dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPerfilDataNascimento"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Data de Nascimento (DD/MM/AAAA)"
-                android:inputType="date"
-                android:focusable="false"/> </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="12dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPerfilCpf"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="CPF (somente leitura)"
-                android:inputType="none"
-                android:focusable="false"
-                android:enabled="false"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="12dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPerfilRg"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="RG"
-                android:inputType="text"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="12dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPerfilEmail"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Email"
-                android:inputType="textEmailAddress"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="12dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPerfilTelefone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Telefone"
-                android:inputType="phone"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:text="Nome Completo"
+            android:textColor="@color/design_secondary_text"/>
 
         <TextView
+            android:id="@+id/etPerfilNomeCompleto"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="16dp"
+            tools:text="Nome Completo do Paciente"/>
+
+        <TextView
+            style="@style/TextAppearance.Material3.LabelLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Data de Nascimento"
+            android:textColor="@color/design_secondary_text"/>
+
+        <TextView
+            android:id="@+id/etPerfilDataNascimento"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="16dp"
+            tools:text="10/06/1990"/>
+
+        <TextView
+            style="@style/TextAppearance.Material3.LabelLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CPF"
+            android:textColor="@color/design_secondary_text"/>
+
+        <TextView
+            android:id="@+id/etPerfilCpf"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="16dp"
+            tools:text="000.111.222-33"/>
+
+        <TextView
+            style="@style/TextAppearance.Material3.LabelLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RG"
+            android:textColor="@color/design_secondary_text"/>
+
+        <TextView
+            android:id="@+id/etPerfilRg"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="16dp"
+            tools:text="12.345.678-9"/>
+
+        <TextView
+            style="@style/TextAppearance.Material3.LabelLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email"
+            android:textColor="@color/design_secondary_text"/>
+
+        <TextView
+            android:id="@+id/etPerfilEmail"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="16dp"
+            tools:text="paciente@email.com"/>
+
+        <TextView
+            style="@style/TextAppearance.Material3.LabelLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Telefone"
+            android:textColor="@color/design_secondary_text"/>
+
+        <TextView
+            android:id="@+id/etPerfilTelefone"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="24dp"
+            tools:text="(62) 99999-8888"/>
+
+        <!-- Seção de Endereço -->
+        <TextView
+            style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Endereço"
-            android:textSize="16sp"
             android:textStyle="bold"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="4dp"/>
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="8dp"/>
 
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
+            android:id="@+id/etPerfilRua"
+            style="@style/TextAppearance.Material3.BodyLarge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="8dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPerfilRua"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Rua, Nº, Bairro"
-                android:inputType="textPostalAddress"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:textSize="18sp"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="2dp"
+            tools:text="Rua das Flores, Nº 123, Bairro Feliz"/>
 
-        <com.google.android.material.textfield.TextInputLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="8dp">
-            <com.google.android.material.textfield.TextInputEditText
+            android:orientation="horizontal">
+            <TextView
                 android:id="@+id/etPerfilCidade"
-                android:layout_width="match_parent"
+                style="@style/TextAppearance.Material3.BodyLarge"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Cidade"
-                android:inputType="text"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="8dp">
-            <com.google.android.material.textfield.TextInputEditText
+                android:textSize="18sp"
+                android:textColor="@color/design_primary_text"
+                tools:text="Aparecida de Goiânia"/>
+            <TextView
                 android:id="@+id/etPerfilEstado"
-                android:layout_width="match_parent"
+                style="@style/TextAppearance.Material3.BodyLarge"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Estado"
-                android:inputType="textCapCharacters"
-                android:maxLength="2"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
+                android:textSize="18sp"
+                android:textColor="@color/design_primary_text"
+                tools:text=" - GO"/>
+        </LinearLayout>
+        <TextView
+            android:id="@+id/etPerfilCep"
+            style="@style/TextAppearance.Material3.BodyLarge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="12dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPerfilCep"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="CEP"
-                android:inputType="number"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:textSize="18sp"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="24dp"
+            tools:text="74900-000"/>
 
-        <com.google.android.material.textfield.TextInputLayout
+
+        <!-- Seção de Saúde -->
+        <TextView
+            style="@style/TextAppearance.Material3.TitleMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Informações de Saúde"
+            android:textStyle="bold"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            style="@style/TextAppearance.Material3.LabelLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alergias"
+            android:textColor="@color/design_secondary_text"/>
+        <TextView
+            android:id="@+id/etPerfilAlergias"
+            style="@style/TextAppearance.Material3.BodyLarge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="12dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPerfilAlergias"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Alergias (separadas por vírgula)"
-                android:inputType="textMultiLine"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:textSize="18sp"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginBottom="16dp"
+            tools:text="Dipirona, Poeira"/>
 
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
+            style="@style/TextAppearance.Material3.LabelLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Medicamentos em Uso"
+            android:textColor="@color/design_secondary_text"/>
+        <TextView
+            android:id="@+id/etPerfilMedicamentos"
+            style="@style/TextAppearance.Material3.BodyLarge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="24dp">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPerfilMedicamentos"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Medicamentos em uso (separados por vírgula)"
-                android:inputType="textMultiLine"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-
-        <Button
-            android:id="@+id/btnSalvarPerfil"
-            android:layout_width="match_parent"
+            android:textSize="18sp"
+            android:textColor="@color/design_primary_text"
+            tools:text="Losartana, Paracetamol"/>
+        <TextView
+            android:id="@+id/tvErrorMessage"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Salvar Alterações"
-            android:backgroundTint="#1A73E8"
-            android:textColor="@android:color/white"
-            android:paddingVertical="12dp"/>
+            android:layout_gravity="center"
+            android:text="Erro ao carregar os dados. Tente novamente mais tarde."
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="18sp"
+            android:visibility="gone" />
+
     </LinearLayout>
 </ScrollView>
