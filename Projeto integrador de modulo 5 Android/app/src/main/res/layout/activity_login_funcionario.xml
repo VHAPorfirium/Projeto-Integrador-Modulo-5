@@ -5,7 +5,7 @@
     android:id="@+id/loginFuncionarioLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_blue_bg"
+    android:background="@color/design_slate_50"
     android:padding="24dp"
     tools:context=".presentation.ui.activity.LoginFuncionarioActivity">
 
@@ -16,8 +16,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:text="Login do Funcionário"
-        android:textColor="@color/primary_blue"
-        android:textSize="28sp"
+        android:textColor="@color/design_primary_text"
+        android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"

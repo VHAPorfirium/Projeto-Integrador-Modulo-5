@@ -6,8 +6,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -24,7 +22,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import br.com.projetoIntegrador.R;
 import br.com.projetoIntegrador.network.AttendanceEntryDto;
-import br.com.projetoIntegrador.presentation.adapter.FilaDetalheAdapter;
 import br.com.projetoIntegrador.presentation.viewmodel.AttendanceEntryViewModel;
 
 public class FilaFragment extends Fragment {
@@ -35,10 +32,7 @@ public class FilaFragment extends Fragment {
     private AttendanceEntryViewModel attendanceEntryViewModel;
     private TextView tvPosicaoFila;
     private TextView tvTempoEsperaEstimado;
-    private ImageButton btnRefreshFila;
-    private Button btnDetalharFila;
-    private RecyclerView recyclerViewFilaCompleta;
-    private FilaDetalheAdapter filaAdapter;
+    private Button btnRefreshFila; // Alterado de ImageButton para Button
 
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable refreshRunnable;
@@ -66,36 +60,21 @@ public class FilaFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Infla o novo layout do fragmento da fila
         View view = inflater.inflate(R.layout.fragment_fila, container, false);
 
+        // Associa as views do novo layout
         tvPosicaoFila = view.findViewById(R.id.tvPosicaoFila);
         tvTempoEsperaEstimado = view.findViewById(R.id.tvTempoEsperaEstimado);
         btnRefreshFila = view.findViewById(R.id.btnRefreshFila);
-        btnDetalharFila = view.findViewById(R.id.btnDetalharFila);
-        recyclerViewFilaCompleta = view.findViewById(R.id.recyclerViewFilaCompleta);
 
-        recyclerViewFilaCompleta.setLayoutManager(new LinearLayoutManager(getContext()));
-        filaAdapter = new FilaDetalheAdapter(new ArrayList<>(), pacienteIdLogado);
-        recyclerViewFilaCompleta.setAdapter(filaAdapter);
-
+        // Configura o listener do botão de atualizar
         btnRefreshFila.setOnClickListener(v -> carregarDadosFilaComFeedback());
-        btnDetalharFila.setOnClickListener(v -> toggleDetalhesFila());
 
         observarDadosFila();
         carregarDadosFila();
 
         return view;
-    }
-
-    private void toggleDetalhesFila() {
-        if (recyclerViewFilaCompleta.getVisibility() == View.GONE) {
-            recyclerViewFilaCompleta.setVisibility(View.VISIBLE);
-            btnDetalharFila.setText("Ocultar Detalhes da Fila");
-            // Os dados já devem ter sido carregados pelo carregarDadosFila()
-        } else {
-            recyclerViewFilaCompleta.setVisibility(View.GONE);
-            btnDetalharFila.setText("Detalhar Fila Completa");
-        }
     }
 
     private void carregarDadosFilaComFeedback(){
@@ -110,7 +89,6 @@ public class FilaFragment extends Fragment {
             } else {
                 tvPosicaoFila.setText("Erro ao carregar fila.");
                 tvTempoEsperaEstimado.setText("Tempo estimado: -");
-                filaAdapter.setEntradas(new ArrayList<>());
                 Log.e(TAG, "Lista de entradas da fila nula.");
             }
         });
@@ -119,59 +97,48 @@ public class FilaFragment extends Fragment {
     private void processarFila(List<AttendanceEntryDto> todasEntradas) {
         if (pacienteIdLogado == null) return;
 
-        // Filtra entradas relevantes (AGUARDANDO ou CONFIRMADO) e ordena por checkInTime
         List<AttendanceEntryDto> filaRelevante = todasEntradas.stream()
                 .filter(entry -> "AGUARDANDO".equalsIgnoreCase(entry.getStatus()) || "CONFIRMADO".equalsIgnoreCase(entry.getStatus()))
                 .sorted(Comparator.comparing(AttendanceEntryDto::getCheckInTime, Comparator.nullsLast(Comparator.naturalOrder())))
                 .collect(Collectors.toList());
 
-        int minhaPosicao = -1;
-        Long minhaEspecialidadeId = null;
-
+        int minhaPosicaoNaListaGeral = -1;
         for (int i = 0; i < filaRelevante.size(); i++) {
             if (filaRelevante.get(i).getPacienteId().equals(pacienteIdLogado)) {
-                minhaPosicao = i + 1; // Posição base 1
-                minhaEspecialidadeId = filaRelevante.get(i).getSpecialtyId();
+                minhaPosicaoNaListaGeral = i;
                 break;
             }
         }
 
-        if (minhaPosicao != -1 && minhaEspecialidadeId != null) {
-            tvPosicaoFila.setText("Você está em: " + minhaPosicao + "º");
-            int finalMinhaPosicao = minhaPosicao;
-            Long finalMinhaEspecialidadeId1 = minhaEspecialidadeId;
-            long pessoasNaFrenteMesmaEspecialidade = filaRelevante.stream()
-                    .filter(entry -> entry.getSpecialtyId().equals(finalMinhaEspecialidadeId1) &&
-                            filaRelevante.indexOf(entry) < (finalMinhaPosicao -1) ) // Pessoas antes de mim na mesma especialidade
-                    .count();
+        if (minhaPosicaoNaListaGeral != -1) {
+            long pessoasNaFrente = minhaPosicaoNaListaGeral;
+            if (pessoasNaFrente == 0) {
+                tvPosicaoFila.setText("Você é o próximo!");
+            } else if (pessoasNaFrente == 1) {
+                tvPosicaoFila.setText("1 paciente na sua frente");
+            } else {
+                tvPosicaoFila.setText(pessoasNaFrente + " pacientes na sua frente");
+            }
 
-            long tempoEstimadoMin = pessoasNaFrenteMesmaEspecialidade * 5; // Ex: 5 min por pessoa
-            tvTempoEsperaEstimado.setText("Tempo estimado: ~" + tempoEstimadoMin + " min");
-
-            // Atualiza a lista detalhada apenas com a fila da minha especialidade
-            Long finalMinhaEspecialidadeId = minhaEspecialidadeId;
-            List<AttendanceEntryDto> filaDetalhada = filaRelevante.stream()
-                    .filter(entry -> entry.getSpecialtyId().equals(finalMinhaEspecialidadeId))
-                    .collect(Collectors.toList());
-            filaAdapter.setEntradas(filaDetalhada);
+            long tempoEstimadoMin = pessoasNaFrente * 5; // Ex: 5 min por pessoa
+            tvTempoEsperaEstimado.setText("Espera estimada: " + tempoEstimadoMin + " minutos");
 
         } else {
-            tvPosicaoFila.setText("Você não está na fila ou já foi atendido.");
-            tvTempoEsperaEstimado.setText("Tempo estimado: -");
-            filaAdapter.setEntradas(new ArrayList<>()); // Limpa a lista detalhada
+            tvPosicaoFila.setText("Você não está na fila");
+            tvTempoEsperaEstimado.setText("Check-in não realizado");
         }
     }
 
 
     private void carregarDadosFila() {
         Log.d(TAG, "Carregando dados da fila...");
-        attendanceEntryViewModel.listAllAttendanceEntries(); // O observer cuidará de atualizar
+        attendanceEntryViewModel.listAllAttendanceEntries();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        carregarDadosFila(); // Carrega ao resumir
+        carregarDadosFila();
         refreshRunnable = new Runnable() {
             @Override
             public void run() {

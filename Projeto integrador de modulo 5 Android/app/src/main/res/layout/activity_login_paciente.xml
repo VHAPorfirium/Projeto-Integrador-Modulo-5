@@ -7,69 +7,67 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/light_blue_bg"
-    android:gravity="center_vertical"
-    android:padding="24dp"
+    android:background="@color/design_slate_50"
+    android:padding="16dp"
     tools:context=".presentation.ui.activity.LoginPacienteActivity">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Login do Paciente"
-        android:textSize="28sp"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="@color/primary_blue"
-        android:shadowColor="@color/black"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="1.5"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="40dp" />
+        android:textColor="@color/design_primary_text"
+        android:gravity="center"
+        android:layout_marginBottom="32dp" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilCpf"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_marginBottom="16dp"
-        android:hint="CPF (000.000.000-00)">
+        app:boxStrokeWidth="0dp"
+        app:boxStrokeWidthFocused="0dp"
+        android:layout_marginBottom="16dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextCpf"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
+            android:background="@drawable/rounded_edittext_background"
+            android:hint="CPF (000.000.000-00)"
             android:inputType="number"
-            android:maxLength="14"/>
+            android:maxLength="14"
+            android:paddingHorizontal="16dp"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilSenhaPaciente"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         app:passwordToggleEnabled="true"
-        android:layout_marginBottom="24dp"
-        android:hint="Digite sua senha">
+        app:boxStrokeWidth="0dp"
+        app:boxStrokeWidthFocused="0dp"
+        android:layout_marginBottom="24dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextPasswordPaciente"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
+            android:background="@drawable/rounded_edittext_background"
+            android:hint="Senha"
             android:inputType="textPassword"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/buttonLoginPaciente"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingVertical="14dp"
+        android:layout_height="58dp"
         android:text="Entrar"
         android:textAllCaps="false"
-        android:textColor="@color/white"
+        android:textColor="@color/design_slate_50_text"
         android:textStyle="bold"
-        android:textSize="18sp"
-        android:backgroundTint="@color/primary_blue"
+        android:textSize="16sp"
+        android:backgroundTint="@color/design_primary_blue"
         android:layout_marginBottom="16dp" />
 
     <TextView
@@ -77,14 +75,26 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp"
-        android:text="Esqueci a senha"
-        android:textColor="@color/primary_blue"
-        android:textSize="16sp"
+        android:text="Esqueci Senha"
+        android:textColor="@color/design_secondary_text"
+        android:textSize="14sp"
         android:layout_gravity="center_horizontal"
         android:clickable="true"
         android:focusable="true"
-        android:background="?attr/selectableItemBackground" />
+        android:background="?attr/selectableItemBackground"
+        android:paddingVertical="12dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Criar Conta"
+        android:textColor="@color/design_secondary_text"
+        android:textSize="14sp"
+        android:layout_gravity="center_horizontal"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground"
+        android:paddingVertical="12dp"/>
 
 </LinearLayout>

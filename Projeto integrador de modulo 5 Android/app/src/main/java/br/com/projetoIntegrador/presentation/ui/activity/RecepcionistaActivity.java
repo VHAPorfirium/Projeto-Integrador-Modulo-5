@@ -129,12 +129,8 @@ public class RecepcionistaActivity extends AppCompatActivity {
 
     private void setupAdapters() {
         recyclerViewFilaAtualRecepcao.setLayoutManager(new LinearLayoutManager(this));
-
-        // ===== A CORREÇÃO PRINCIPAL ESTÁ AQUI =====
-        // Usando o construtor correto (e simples) do Adapter.
         filaRecepcaoAdapter = new FilaRecepcaoAdapter();
         recyclerViewFilaAtualRecepcao.setAdapter(filaRecepcaoAdapter);
-        // ==========================================
 
         ArrayAdapter<String> especialidadesArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
         especialidadesArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

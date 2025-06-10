@@ -1,53 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/light_blue_bg"
-    android:gravity="center"
-    android:padding="24dp"
-    tools:context=".presentation.ui.activity.MainActivity"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:background="@color/design_slate_50"
+    android:gravity="center_horizontal"
+    android:padding="16dp"
+    tools:context=".presentation.ui.activity.MainActivity">
 
     <TextView
         android:id="@+id/textWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bem Vindo(a)!"
+        android:text="Bem vido ao SGFH!"
         android:textSize="28sp"
         android:textStyle="bold"
-        android:textColor="@color/primary_blue"
-        android:shadowColor="@color/black"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="1.5"
-        android:layout_marginBottom="40dp" />
+        android:textColor="@color/design_primary_text"
+        android:layout_marginTop="80dp"
+        android:layout_marginBottom="24dp" />
 
     <Button
         android:id="@+id/btnPaciente"
-        android:layout_width="280dp"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="Sou Paciente"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="Paciente"
         android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="18sp"
+        android:textColor="@color/design_slate_50_text"
+        android:textSize="16sp"
         android:textStyle="bold"
-        android:backgroundTint="@color/primary_blue"
-        android:layout_marginBottom="20dp" />
+        android:backgroundTint="@color/design_primary_blue" />
 
     <Button
         android:id="@+id/btnFuncionario"
-        android:layout_width="280dp"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="Sou Funcionário"
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:layout_marginHorizontal="16dp"
+        android:text="Funcionario"
         android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:textSize="18sp"
+        android:textColor="@color/design_primary_text"
+        android:textSize="16sp"
         android:textStyle="bold"
-        android:backgroundTint="@color/secondary_teal" />
+        android:backgroundTint="@color/design_light_gray_button" />
 
 </LinearLayout>

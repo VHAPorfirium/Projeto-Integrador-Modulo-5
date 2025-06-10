@@ -26,19 +26,17 @@ public class PacienteDashboardActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
     private BottomNavigationView bottomNavigationView;
-    private Long pacienteId; // Para passar aos fragments se necessário
+    private Long pacienteId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_paciente_dashboard);
 
-        // Recuperar ID do paciente das SharedPreferences
         SharedPreferences prefs = getSharedPreferences(MyFirebaseService.SHARED_PREFS_NAME, MODE_PRIVATE);
         pacienteId = prefs.getLong(MyFirebaseService.PACIENTE_ID_KEY, -1L);
 
         if (pacienteId == -1L) {
-            // Tratar erro: pacienteId não encontrado, talvez redirecionar para login
             startActivity(new Intent(this, LoginPacienteActivity.class));
             finish();
             return;
@@ -57,16 +55,13 @@ public class PacienteDashboardActivity extends AppCompatActivity {
                 int itemId = item.getItemId();
                 if (itemId == R.id.nav_inicio_paciente) {
                     selectedFragment = FilaFragment.newInstance(pacienteId);
-                    title = "Início";
-                } else if (itemId == R.id.nav_confirmacao_paciente) {
-                    // ConfirmacaoFragment pode precisar de um ID de entrada específico,
-                    // geralmente não é aberto diretamente pela navegação, mas por uma notificação.
-                    // Por enquanto, pode ser um placeholder ou carregar se houver uma chamada ativa.
-                    selectedFragment = new ConfirmacaoFragment(); // Ou ConfirmacaoFragment.newInstance(algumIdDeChamadaAtiva);
-                    title = "Confirmação";
+                    title = "Sua Posição";
                 } else if (itemId == R.id.nav_retornos_paciente) {
                     selectedFragment = AgendamentoFragment.newInstance(pacienteId);
-                    title = "Agendar Retorno";
+                    title = "Agendamentos";
+                } else if (itemId == R.id.nav_perfil_paciente) {
+                    selectedFragment = PerfilFragment.newInstance(pacienteId);
+                    title = "Meu Perfil";
                 }
 
                 if (selectedFragment != null) {
@@ -92,11 +87,13 @@ public class PacienteDashboardActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.nav_perfil_paciente) {
-            loadFragment(PerfilFragment.newInstance(pacienteId));
-            if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle("Meu Perfil");
-            }
+        if (item.getItemId() == R.id.action_logout_paciente) {
+            SharedPreferences prefs = getSharedPreferences(MyFirebaseService.SHARED_PREFS_NAME, MODE_PRIVATE);
+            prefs.edit().clear().apply();
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -108,11 +105,7 @@ public class PacienteDashboardActivity extends AppCompatActivity {
         transaction.commit();
     }
 
-    // Método para ser chamado por MyFirebaseService para mostrar ConfirmacaoFragment
     public void mostrarConfirmacaoChamada(long attendanceEntryId) {
-        if (bottomNavigationView != null) {
-            bottomNavigationView.setSelectedItemId(R.id.nav_confirmacao_paciente); // Muda para a aba
-        }
         loadFragment(ConfirmacaoFragment.newInstance(attendanceEntryId));
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Confirmação de Chamada");

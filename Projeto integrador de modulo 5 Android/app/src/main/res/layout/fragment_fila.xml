@@ -1,88 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_blue_bg"
-    android:padding="16dp"
+    android:background="@color/design_slate_50"
+    android:fillViewport="true"
     tools:context=".presentation.ui.fragment.FilaFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sua Posição"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/design_primary_text"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"/>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="8dp"
-            android:layout_marginBottom="16dp">
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:src="@drawable/hospital_background"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Imagem de fundo do hospital"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Sua Posição na Fila"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:layout_marginBottom="8dp"/>
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tvPosicaoFila"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Você está em: 3º"
-                    android:text="Você está em: -"
-                    android:textSize="22sp"
-                    android:textColor="@color/primary_blue"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="4dp"/>
+                    <TextView
+                        android:id="@+id/tvPosicaoFila"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="2 Pacientes na frente"
+                        android:text="Buscando posição..."
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/design_primary_text"/>
 
-                <TextView
-                    android:id="@+id/tvTempoEsperaEstimado"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Tempo estimado: ~12 min"
-                    android:text="Tempo estimado: ~ -"
-                    android:textSize="16sp"
-                    android:textColor="@color/dark_gray"
-                    android:layout_marginBottom="16dp"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="bottom">
 
-                <ImageButton
-                    android:id="@+id/btnRefreshFila"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_refresh"
-                    android:contentDescription="Atualizar Fila"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:layout_gravity="end"/>
+                        <TextView
+                            android:id="@+id/tvTempoEsperaEstimado"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            tools:text="Espera estimada: 25 minutos"
+                            android:text="Espera estimada: -"
+                            android:textSize="16sp"
+                            android:textColor="@color/design_secondary_text"/>
+
+                        <Button
+                            android:id="@+id/btnRefreshFila"
+                            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:text="Atualizar"
+                            android:textAllCaps="false"
+                            android:textColor="@color/design_primary_text"
+                            android:backgroundTint="@color/design_light_blue_button" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <Button
-            android:id="@+id/btnDetalharFila"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Detalhar Fila Completa"
-            android:backgroundTint="@color/secondary_teal"
-            android:textColor="@color/white"
-            android:layout_marginBottom="16dp"/>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewFilaCompleta"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            tools:listitem="@layout/item_fila_detalhe"
-            tools:itemCount="3"/>
+            android:text="Você receberá uma notificação quando for a sua vez. Por favor, permaneça por perto."
+            android:textAlignment="center"
+            android:textColor="@color/design_primary_text"
+            android:textSize="16sp"
+            android:layout_marginTop="24dp"/>
 
     </LinearLayout>
 </ScrollView>
