@@ -14,14 +14,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
 import br.com.projetoIntegrador.R;
 import br.com.projetoIntegrador.network.AttendanceEntryDto;
 import br.com.projetoIntegrador.network.NotificationRequest;
-import br.com.projetoIntegrador.network.PacienteDto;
 import br.com.projetoIntegrador.presentation.viewmodel.AttendanceEntryViewModel;
 import br.com.projetoIntegrador.presentation.viewmodel.NotificationViewModel;
 import br.com.projetoIntegrador.presentation.viewmodel.PacienteViewModel;
@@ -38,8 +36,8 @@ public class ChamarProximoActivity extends AppCompatActivity {
 
     private Long attendanceEntryId;
     private Long pacienteIdParaNotificar;
-    private String nomePacienteParaExibir = "Paciente"; // Valor padrão
-    private String senhaParaExibir = "-"; // Valor padrão
+    private String nomePacienteParaExibir = "Paciente";
+    private String senhaParaExibir = "-";
     private AttendanceEntryDto currentAttendanceEntry;
 
 
@@ -94,7 +92,7 @@ public class ChamarProximoActivity extends AppCompatActivity {
     }
 
     private void carregarDetalhesPacienteEEntrada() {
-        btnChamarPacienteConfirmar.setEnabled(false); // Desabilita enquanto carrega
+        btnChamarPacienteConfirmar.setEnabled(false);
         tvNomePacienteChamar.setText("Carregando nome...");
         tvSenhaPacienteChamar.setText("Senha: ...");
         Log.d(TAG, "carregarDetalhesPacienteEEntrada: Iniciando carregamento de detalhes.");
@@ -115,12 +113,11 @@ public class ChamarProximoActivity extends AppCompatActivity {
         attendanceEntryViewModel.getAttendanceEntryById(attendanceEntryId).observe(this, entryDto -> {
             if (entryDto != null) {
                 currentAttendanceEntry = entryDto;
-                senhaParaExibir = "E" + entryDto.getId(); // Usando o ID da entrada como "senha" visual
+                senhaParaExibir = "E" + entryDto.getId();
                 tvSenhaPacienteChamar.setText("Senha: " + senhaParaExibir);
                 Log.d(TAG, "carregarDetalhesPacienteEEntrada: Detalhes da entrada de atendimento carregados. Status: " + entryDto.getStatus());
 
 
-                // Verifica se o paciente já foi chamado ou atendido
                 if (!"AGUARDANDO".equalsIgnoreCase(entryDto.getStatus()) && !"CONFIRMADO".equalsIgnoreCase(entryDto.getStatus())) {
                     btnChamarPacienteConfirmar.setText("Paciente já " + entryDto.getStatus().toLowerCase());
                     btnChamarPacienteConfirmar.setEnabled(false);
@@ -138,8 +135,6 @@ public class ChamarProximoActivity extends AppCompatActivity {
     }
 
     private void checkIfDataReady() {
-        // Habilita o botão apenas se todos os dados necessários foram carregados
-        // e o paciente ainda está em um estado que permite chamada.
         if (currentAttendanceEntry != null && nomePacienteParaExibir != null &&
                 ("AGUARDANDO".equalsIgnoreCase(currentAttendanceEntry.getStatus()) ||
                         "CONFIRMADO".equalsIgnoreCase(currentAttendanceEntry.getStatus())) ) {
@@ -160,10 +155,13 @@ public class ChamarProximoActivity extends AppCompatActivity {
         dataPayload.put("action", "CHAMADA_PACIENTE");
         dataPayload.put("attendanceEntryId", String.valueOf(attendanceEntryId));
         dataPayload.put("message", corpo); // Pode ser útil para o app do paciente
+        dataPayload.put("title", titulo); // Adicionado para garantir que o título vá no payload de dados
+        dataPayload.put("body", corpo); // Adicionado para garantir que o corpo vá no payload de dados
+
 
         NotificationRequest request = new NotificationRequest(
                 String.valueOf(pacienteIdParaNotificar),
-                titulo,
+                titulo, // Este título e corpo podem ser usados para a notificação de sistema padrão
                 corpo,
                 dataPayload
         );
@@ -171,35 +169,25 @@ public class ChamarProximoActivity extends AppCompatActivity {
         btnChamarPacienteConfirmar.setEnabled(false);
         tvFeedbackChamada.setText("Enviando notificação...");
         tvFeedbackChamada.setVisibility(View.VISIBLE);
-        Log.d(TAG, "chamarPaciente: Enviando notificação para paciente ID: " + pacienteIdParaNotificar);
+        Log.d(TAG, "chamarPaciente: Enviando notificação para paciente ID: " + pacienteIdParaNotificar + " com título: " + titulo + ", corpo: " + corpo + ", data: " + dataPayload);
 
-        notificationViewModel.sendNotification(request); // O observer tratará da resposta
+        notificationViewModel.sendNotification(request);
     }
 
     private void observarViewModels(){
-        // Observador para o resultado do envio da notificação
-        // Garante que o LiveData não seja nulo para observação contínua
         if (notificationViewModel.sendNotification(null) == null) {
-            // Este caso só ocorreria se o ViewModel não estivesse configurado corretamente
-            // ou se a primeira chamada sendNotification(null) retornasse null, o que é improvável.
             Log.e(TAG, "observarViewModels: LiveData de notificação é nulo ao tentar observar.");
             return;
         }
 
         notificationViewModel.sendNotification(null)
                 .observe(this, resultado -> {
-                    // Este LiveData é um pouco genérico, pode ser acionado por outras chamadas se o ViewModel for reutilizado.
-                    // Idealmente, ter um LiveData específico por operação ou usar um wrapper com ID da operação.
-                    // Por enquanto, assumimos que este é o resultado da nossa chamada.
-
-                    // Verificamos se o botão está desabilitado (sinal de que uma chamada foi feita)
-                    // e se o resultado não é nulo (evitar chamadas de inicialização do LiveData)
                     if (!btnChamarPacienteConfirmar.isEnabled() && resultado != null) {
                         Log.d(TAG, "Resultado do envio da notificação: " + resultado);
                         if (resultado.toLowerCase().contains("erro") || resultado.toLowerCase().contains("falha")) {
                             tvFeedbackChamada.setText("Falha ao enviar notificação: " + resultado);
                             Toast.makeText(ChamarProximoActivity.this, "Falha ao enviar notificação.", Toast.LENGTH_LONG).show();
-                            btnChamarPacienteConfirmar.setEnabled(true); // Permite tentar novamente
+                            btnChamarPacienteConfirmar.setEnabled(true);
                         } else {
                             tvFeedbackChamada.setText("Notificação enviada para o dispositivo do paciente.");
                             Toast.makeText(ChamarProximoActivity.this, "Notificação enviada!", Toast.LENGTH_SHORT).show();
@@ -209,57 +197,44 @@ public class ChamarProximoActivity extends AppCompatActivity {
                 });
     }
 
-
     private void atualizarStatusEntradaParaChamado() {
         if (currentAttendanceEntry == null) {
             Log.e(TAG, "currentAttendanceEntry é nulo, não pode atualizar status.");
             Toast.makeText(this, "Erro interno ao atualizar status.", Toast.LENGTH_SHORT).show();
-            btnChamarPacienteConfirmar.setEnabled(true); // Permite tentar de novo se algo deu errado
+            btnChamarPacienteConfirmar.setEnabled(true);
             return;
         }
 
         Log.d(TAG, "atualizarStatusEntradaParaChamado: Tentando atualizar status da entrada " + attendanceEntryId + " para CHAMADO.");
 
-        // Cria um novo DTO para atualização para não modificar o DTO original observado,
-        // ou garante que o currentAttendanceEntry seja uma cópia se for ser modificado.
         AttendanceEntryDto dtoParaAtualizar = new AttendanceEntryDto();
         dtoParaAtualizar.setId(currentAttendanceEntry.getId());
         dtoParaAtualizar.setPacienteId(currentAttendanceEntry.getPacienteId());
         dtoParaAtualizar.setSpecialtyId(currentAttendanceEntry.getSpecialtyId());
-        // IMPORTANTE: Se o seu backend espera o DTO completo, certifique-se de copiar todos os campos.
-        // Se a API de update do backend só usa o ID do path e o status do body, isso é suficiente.
-        // A sua API de update atualiza o status.
-        // Se houver campos que não podem ser nulos no DTO do corpo da requisição de PUT,
-        // você precisará preenchê-los com os valores originais de currentAttendanceEntry
-        // antes de setar o status e enviar.
-
-        dtoParaAtualizar.setStatus("CHAMADO"); // Novo status
-        // O backend deve setar o callTime ao receber esta atualização.
+        dtoParaAtualizar.setStatus("CHAMADO");
 
         attendanceEntryViewModel.updateAttendanceEntry(attendanceEntryId, dtoParaAtualizar).observe(this, updatedEntry -> {
             if (updatedEntry != null && "CHAMADO".equalsIgnoreCase(updatedEntry.getStatus())) {
                 Log.i(TAG, "Status da entrada " + attendanceEntryId + " atualizado para CHAMADO com sucesso.");
                 Toast.makeText(this, "Paciente chamado. Status atualizado.", Toast.LENGTH_LONG).show();
-                // Finaliza a activity após um delay para o usuário ver o feedback.
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    setResult(RESULT_OK); // Informa à activity anterior que a chamada foi bem-sucedida
+                    setResult(RESULT_OK);
                     finish();
                 }, 2500);
             } else {
                 Log.e(TAG, "Falha ao atualizar status da entrada para CHAMADO. Resposta da API: " + updatedEntry + ", ou status inesperado.");
                 Toast.makeText(this, "Falha ao atualizar status do paciente.", Toast.LENGTH_SHORT).show();
-                btnChamarPacienteConfirmar.setEnabled(true); // Permite tentar de novo
+                btnChamarPacienteConfirmar.setEnabled(true);
                 tvFeedbackChamada.setText("Falha ao atualizar status. Tente chamar novamente.");
             }
         });
     }
 
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             Log.d(TAG, "Botão Voltar pressionado.");
-            finish(); // Volta para a tela anterior (ProfissionalSaudeActivity)
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);

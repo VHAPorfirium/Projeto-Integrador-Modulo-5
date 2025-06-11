@@ -10,10 +10,8 @@ public class NotificationRequest {
     @NotBlank
     private String pacienteId;
 
-    @NotBlank
     private String title;
 
-    @NotBlank
     private String body;
 
     private Map<String, String> data;

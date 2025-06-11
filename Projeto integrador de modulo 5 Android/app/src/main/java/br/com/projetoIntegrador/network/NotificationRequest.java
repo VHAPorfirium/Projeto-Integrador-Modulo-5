@@ -25,6 +25,9 @@ public class NotificationRequest {
         this.data = data;
     }
 
+    public NotificationRequest() {
+    }
+
     // Getters e Setters
     public String getPacienteId() {
         return pacienteId;

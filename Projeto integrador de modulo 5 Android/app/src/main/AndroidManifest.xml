@@ -2,19 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- ===================================================================================== -->
-    <!-- |                                    PERMISSÕES                                     | -->
-    <!-- ===================================================================================== -->
-    <!-- Permite que o aplicativo acesse a internet para se comunicar com APIs e outros serviços. -->
+    <!-- Permissões -->
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- Necessária a partir do Android 13 (API 33) para poder enviar notificações ao usuário. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-
-    <!-- ===================================================================================== -->
-    <!-- |                                    APLICAÇÃO                                      | -->
-    <!-- ===================================================================================== -->
     <application
         android:name=".ProjetoIntegradorApplication"
         android:allowBackup="true"
@@ -28,22 +19,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-        <!--
-            ATENÇÃO SOBRE 'usesCleartextTraffic':
-            Esta propriedade como "true" permite que o app se comunique via HTTP (não criptografado).
-            É útil para testes em ambiente de desenvolvimento com um servidor local.
-            Para a versão de produção do aplicativo, o ideal é definir como "false" por segurança
-            e usar uma Configuração de Segurança de Rede (Network Security Config) para permitir
-            apenas domínios confiáveis, se necessário.
-        -->
-
-
-        <!-- ===================================================================================== -->
-        <!-- |                                    ATIVIDADES (TELAS)                             | -->
-        <!-- ===================================================================================== -->
-
-        <!-- Atividade de Splash (Tela de Abertura) -->
-        <!-- É a porta de entrada do app (LAUNCHER), por isso 'exported="true"' é obrigatório. -->
+        <!-- SplashScreen -->
         <activity
             android:name=".presentation.ui.activity.SplashActivity"
             android:exported="true">
@@ -53,24 +29,28 @@
             </intent-filter>
         </activity>
 
-        <!-- Atividades Internas do Aplicativo -->
-        <!-- 'exported="false"' é uma boa prática de segurança. Garante que estas atividades
-             só possam ser iniciadas de dentro do próprio aplicativo. -->
+        <!-- Telas internas -->
         <activity android:name=".presentation.ui.activity.MainActivity" android:exported="false" />
         <activity android:name=".presentation.ui.activity.LoginPacienteActivity" android:exported="false" />
         <activity android:name=".presentation.ui.activity.LoginFuncionarioActivity" android:exported="false" />
-        <activity android:name=".presentation.ui.activity.PacienteDashboardActivity" android:exported="false" />
+
+        <!-- PacienteDashboard: agora exportada e com intent-filter para o click_action da notificação -->
+        <activity
+            android:name=".presentation.ui.activity.PacienteDashboardActivity"
+            android:exported="true">
+            <intent-filter>
+                <!-- Este nome deve bater com o click_action que você enviar no payload -->
+                <action android:name="OPEN_CONFIRMACAO" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <activity android:name=".presentation.ui.activity.RecepcionistaActivity" android:exported="false" />
         <activity android:name=".presentation.ui.activity.ProfissionalSaudeActivity" android:exported="false" />
         <activity android:name=".presentation.ui.activity.ChamarProximoActivity" android:exported="false" />
         <activity android:name=".presentation.ui.activity.AdministradorActivity" android:exported="false" />
 
-
-        <!-- ===================================================================================== -->
-        <!-- |                                     SERVIÇOS                                      | -->
-        <!-- ===================================================================================== -->
-
-        <!-- Serviço do Firebase Cloud Messaging (FCM) para receber notificações push. -->
+        <!-- Serviço do FCM -->
         <service
             android:name=".fcm.MyFirebaseService"
             android:exported="false">
