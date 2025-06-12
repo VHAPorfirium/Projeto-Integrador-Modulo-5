@@ -20,20 +20,19 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import br.com.projetoIntegrador.R;
 import br.com.projetoIntegrador.fcm.MyFirebaseService;
 import br.com.projetoIntegrador.network.AttendanceEntryDto;
@@ -84,9 +83,9 @@ public class RecepcionistaActivity extends AppCompatActivity {
         toolbar.setTitle("Olá, " + nomeFuncionarioLogado);
         setSupportActionBar(toolbar);
 
-        pacienteViewModel = new ViewModelProvider(this).get(PacienteViewModel.class);
+        pacienteViewModel       = new ViewModelProvider(this).get(PacienteViewModel.class);
         attendanceEntryViewModel = new ViewModelProvider(this).get(AttendanceEntryViewModel.class);
-        specialtyViewModel = new ViewModelProvider(this).get(SpecialtyViewModel.class);
+        specialtyViewModel      = new ViewModelProvider(this).get(SpecialtyViewModel.class);
 
         bindViews();
         setupListeners();
@@ -96,13 +95,13 @@ public class RecepcionistaActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
-        etCpfCheckin = findViewById(R.id.etCpfCheckin);
-        tilCpfCheckin = findViewById(R.id.tilCpfCheckin);
-        tvNomePacienteEncontrado = findViewById(R.id.tvNomePacienteEncontrado);
+        etCpfCheckin               = findViewById(R.id.etCpfCheckin);
+        tilCpfCheckin              = findViewById(R.id.tilCpfCheckin);
+        tvNomePacienteEncontrado   = findViewById(R.id.tvNomePacienteEncontrado);
         spinnerEspecialidadesCheckin = findViewById(R.id.spinnerEspecialidadesCheckin);
-        btnGerarSenhaCheckin = findViewById(R.id.btnGerarSenhaCheckin);
-        tvSenhaGerada = findViewById(R.id.tvSenhaGerada);
-        tvPosicaoAtualSenha = findViewById(R.id.tvPosicaoAtualSenha);
+        btnGerarSenhaCheckin       = findViewById(R.id.btnGerarSenhaCheckin);
+        tvSenhaGerada              = findViewById(R.id.tvSenhaGerada);
+        tvPosicaoAtualSenha        = findViewById(R.id.tvPosicaoAtualSenha);
         recyclerViewFilaAtualRecepcao = findViewById(R.id.recyclerViewFilaAtualRecepcao);
     }
 
@@ -132,21 +131,24 @@ public class RecepcionistaActivity extends AppCompatActivity {
         filaRecepcaoAdapter = new FilaRecepcaoAdapter();
         recyclerViewFilaAtualRecepcao.setAdapter(filaRecepcaoAdapter);
 
-        ArrayAdapter<String> especialidadesArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
-        especialidadesArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerEspecialidadesCheckin.setAdapter(especialidadesArrayAdapter);
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                new ArrayList<>()
+        );
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerEspecialidadesCheckin.setAdapter(spinnerAdapter);
+
         spinnerEspecialidadesCheckin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position > 0 && position <= listaEspecialidadesCache.size()) {
-                    especialidadeSelecionada = listaEspecialidadesCache.get(position - 1);
+            @Override public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                if (pos > 0 && pos <= listaEspecialidadesCache.size()) {
+                    especialidadeSelecionada = listaEspecialidadesCache.get(pos - 1);
                 } else {
                     especialidadeSelecionada = null;
                 }
                 atualizarEstadoBotaoGerarSenha();
             }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            @Override public void onNothingSelected(AdapterView<?> parent) {
                 especialidadeSelecionada = null;
                 atualizarEstadoBotaoGerarSenha();
             }
@@ -154,53 +156,60 @@ public class RecepcionistaActivity extends AppCompatActivity {
     }
 
     private void observarViewModels() {
-        pacienteViewModel.listAllPacientes().observe(this, pacientes -> {
-            if (pacientes != null) {
-                listaPacientesCache.clear();
-                listaPacientesCache.addAll(pacientes);
-                mapNomesPacientes.clear();
-                for (PacienteDto p : pacientes) {
-                    mapNomesPacientes.put(p.getId(), p.getFullName());
-                }
-                carregarFilaAtual();
-            }
-        });
+        pacienteViewModel.listAllPacientes()
+                .observe(this, pacientes -> {
+                    if (pacientes != null) {
+                        listaPacientesCache.clear();
+                        listaPacientesCache.addAll(pacientes);
+                        mapNomesPacientes.clear();
+                        for (PacienteDto p : pacientes) {
+                            mapNomesPacientes.put(p.getId(), p.getFullName());
+                        }
+                        carregarFilaAtual();
+                    }
+                });
 
-        specialtyViewModel.listAllSpecialties().observe(this, specialties -> {
-            if (specialties != null) {
-                listaEspecialidadesCache.clear();
-                listaEspecialidadesCache.addAll(specialties);
-                mapNomesEspecialidades.clear();
-                List<String> nomesSpinner = new ArrayList<>();
-                nomesSpinner.add("Selecione a Especialidade...");
-                for (SpecialtyDto s : specialties) {
-                    nomesSpinner.add(s.getName());
-                    mapNomesEspecialidades.put(s.getId(), s.getName());
-                }
-                ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinnerEspecialidadesCheckin.getAdapter();
-                adapter.clear();
-                adapter.addAll(nomesSpinner);
-                adapter.notifyDataSetChanged();
-                carregarFilaAtual();
-            } else {
-                Toast.makeText(this, "Erro ao carregar especialidades.", Toast.LENGTH_SHORT).show();
-            }
-        });
+        specialtyViewModel.listAllSpecialties()
+                .observe(this, specialties -> {
+                    if (specialties != null) {
+                        listaEspecialidadesCache.clear();
+                        listaEspecialidadesCache.addAll(specialties);
+                        mapNomesEspecialidades.clear();
+                        List<String> nomes = new ArrayList<>();
+                        nomes.add("Selecione a Especialidade...");
+                        for (SpecialtyDto s : specialties) {
+                            nomes.add(s.getName());
+                            mapNomesEspecialidades.put(s.getId(), s.getName());
+                        }
+                        ArrayAdapter<String> adapter =
+                                (ArrayAdapter<String>) spinnerEspecialidadesCheckin.getAdapter();
+                        adapter.clear();
+                        adapter.addAll(nomes);
+                        adapter.notifyDataSetChanged();
+                        carregarFilaAtual();
+                    } else {
+                        Toast.makeText(this, "Erro ao carregar especialidades.", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
-        attendanceEntryViewModel.listAllAttendanceEntries().observe(this, entries -> {
-            if (entries != null) {
-                List<AttendanceEntryDto> filaOrdenada = entries.stream()
-                        .filter(e -> "AGUARDANDO".equalsIgnoreCase(e.getStatus()) || "CHAMADO".equalsIgnoreCase(e.getStatus()))
-                        .sorted(Comparator.comparing(AttendanceEntryDto::getCheckInTime, Comparator.nullsLast(Comparator.naturalOrder())))
-                        .collect(Collectors.toList());
-
-                filaRecepcaoAdapter.setEntries(filaOrdenada, mapNomesPacientes, mapNomesEspecialidades);
-                atualizarPosicaoSenhaGerada(filaOrdenada);
-            } else {
-                filaRecepcaoAdapter.setEntries(new ArrayList<>(), mapNomesPacientes, mapNomesEspecialidades);
-                Toast.makeText(this, "Erro ao carregar fila atual.", Toast.LENGTH_SHORT).show();
-            }
-        });
+        attendanceEntryViewModel.listAllAttendanceEntries()
+                .observe(this, entries -> {
+                    if (entries != null) {
+                        List<AttendanceEntryDto> filaOrdenada = entries.stream()
+                                .filter(e -> "AGUARDANDO".equalsIgnoreCase(e.getStatus())
+                                        || "CHAMADO"   .equalsIgnoreCase(e.getStatus()))
+                                .sorted(Comparator.comparing(
+                                        AttendanceEntryDto::getCheckInTime,
+                                        Comparator.nullsLast(Comparator.naturalOrder())
+                                ))
+                                .collect(Collectors.toList());
+                        filaRecepcaoAdapter.setEntries(filaOrdenada, mapNomesPacientes, mapNomesEspecialidades);
+                        atualizarPosicaoSenhaGerada(filaOrdenada);
+                    } else {
+                        filaRecepcaoAdapter.setEntries(new ArrayList<>(), mapNomesPacientes, mapNomesEspecialidades);
+                        Toast.makeText(this, "Erro ao carregar fila atual.", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void carregarDadosIniciais() {
@@ -209,8 +218,8 @@ public class RecepcionistaActivity extends AppCompatActivity {
     }
 
     private void buscarPacientePorCpfLocal() {
-        String cpfInput = etCpfCheckin.getText().toString().replaceAll("[^0-9]", "");
-        if (cpfInput.length() != 11) {
+        String cpf = etCpfCheckin.getText().toString().replaceAll("[^0-9]", "");
+        if (cpf.length() != 11) {
             tvNomePacienteEncontrado.setText("Paciente: (Digite o CPF completo)");
             pacienteEncontrado = null;
             atualizarEstadoBotaoGerarSenha();
@@ -218,7 +227,7 @@ public class RecepcionistaActivity extends AppCompatActivity {
         }
         pacienteEncontrado = null;
         for (PacienteDto p : listaPacientesCache) {
-            if (p.getCpf().equals(cpfInput)) {
+            if (cpf.equals(p.getCpf())) {
                 pacienteEncontrado = p;
                 tvNomePacienteEncontrado.setText("Paciente: " + p.getFullName());
                 break;
@@ -259,41 +268,30 @@ public class RecepcionistaActivity extends AppCompatActivity {
         });
     }
 
-    private void limparCamposCheckin(){
+    private void limparCamposCheckin() {
         etCpfCheckin.setText("");
         tvNomePacienteEncontrado.setText("Paciente: ");
         spinnerEspecialidadesCheckin.setSelection(0);
-        pacienteEncontrado = null;
+        pacienteEncontrado      = null;
         especialidadeSelecionada = null;
         btnGerarSenhaCheckin.setEnabled(false);
     }
 
-    private void atualizarPosicaoSenhaGerada(List<AttendanceEntryDto> filaAtual) {
-        String senhaGeradaText = tvSenhaGerada.getText().toString();
-        if (senhaGeradaText.startsWith("E")) {
+    private void atualizarPosicaoSenhaGerada(List<AttendanceEntryDto> fila) {
+        String txt = tvSenhaGerada.getText().toString();
+        if (txt.startsWith("E")) {
             try {
-                long entryIdGerado = Long.parseLong(senhaGeradaText.substring(1));
+                long idGerado = Long.parseLong(txt.substring(1));
                 int pos = 0;
-                boolean encontrado = false;
-                for (AttendanceEntryDto entry : filaAtual) {
+                for (AttendanceEntryDto e : fila) {
                     pos++;
-                    if (entry.getId().equals(entryIdGerado)) {
+                    if (e.getId().equals(idGerado)) {
                         tvPosicaoAtualSenha.setText(pos + "º");
-                        encontrado = true;
-                        break;
+                        return;
                     }
                 }
-                if (!encontrado) {
-                    if(attendanceEntryViewModel.listAllAttendanceEntries().getValue() != null){
-                        for(AttendanceEntryDto e : attendanceEntryViewModel.listAllAttendanceEntries().getValue()){
-                            if(e.getId().equals(entryIdGerado) && ("ATENDIDO".equalsIgnoreCase(e.getStatus()) || "NAO_COMPARECEU".equalsIgnoreCase(e.getStatus()))){
-                                tvPosicaoAtualSenha.setText(e.getStatus());
-                                break;
-                            }
-                        }
-                    }
-                }
-            } catch (NumberFormatException e) {
+                tvPosicaoAtualSenha.setText("-");
+            } catch (NumberFormatException ex) {
                 tvPosicaoAtualSenha.setText("-");
             }
         } else {
@@ -317,9 +315,9 @@ public class RecepcionistaActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_logout_recepcionista) {
             SharedPreferences prefs = getSharedPreferences(MyFirebaseService.SHARED_PREFS_NAME, MODE_PRIVATE);
             prefs.edit().clear().apply();
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
+            Intent it = new Intent(this, MainActivity.class);
+            it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(it);
             finish();
             return true;
         }
@@ -330,12 +328,9 @@ public class RecepcionistaActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         carregarDadosIniciais();
-        refreshFilaRunnable = new Runnable() {
-            @Override
-            public void run() {
-                carregarFilaAtual();
-                handler.postDelayed(this, REFRESH_FILA_INTERVAL);
-            }
+        refreshFilaRunnable = () -> {
+            carregarFilaAtual();
+            handler.postDelayed(refreshFilaRunnable, REFRESH_FILA_INTERVAL);
         };
         handler.postDelayed(refreshFilaRunnable, REFRESH_FILA_INTERVAL);
     }
